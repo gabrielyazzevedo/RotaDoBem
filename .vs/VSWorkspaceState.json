@@ -1,0 +1,13 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\raiz-Backend",
+    "\\raiz-Backend\\config",
+    "\\raiz-Backend\\controllers",
+    "\\raiz-Backend\\middleware",
+    "\\raiz-Backend\\routes",
+    "\\raiz-Backend\\venv"
+  ],
+  "SelectedNode": "\\raiz-Backend\\routes\\route_rota.py",
+  "PreviewInSolutionExplorer": false
+}

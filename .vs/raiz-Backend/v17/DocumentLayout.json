@@ -1,0 +1,173 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\gbsaoliveira\\Downloads\\raiz-Backend\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\gbsaoliveira\\Downloads\\raiz-Backend\\raiz-Backend\\routes\\route_rota.py||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:raiz-Backend\\routes\\route_rota.py||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\gbsaoliveira\\Downloads\\raiz-Backend\\raiz-Backend\\middleware\\auth.py||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:raiz-Backend\\middleware\\auth.py||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\gbsaoliveira\\Downloads\\raiz-Backend\\raiz-Backend\\routes\\route_receptor.py||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:raiz-Backend\\routes\\route_receptor.py||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\gbsaoliveira\\Downloads\\raiz-Backend\\raiz-Backend\\routes\\route_motorista.py||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:raiz-Backend\\routes\\route_motorista.py||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\gbsaoliveira\\Downloads\\raiz-Backend\\raiz-Backend\\routes\\route_estoque.py||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:raiz-Backend\\routes\\route_estoque.py||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\gbsaoliveira\\Downloads\\raiz-Backend\\raiz-Backend\\routes\\route_doador.py||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:raiz-Backend\\routes\\route_doador.py||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\gbsaoliveira\\Downloads\\raiz-Backend\\raiz-Backend\\routes\\route_admin.py||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:raiz-Backend\\routes\\route_admin.py||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\gbsaoliveira\\Downloads\\raiz-Backend\\raiz-Backend\\routes\\route_doacao.py||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:raiz-Backend\\routes\\route_doacao.py||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\gbsaoliveira\\Downloads\\raiz-Backend\\raiz-Backend\\controllers\\controller_doacao.py||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:raiz-Backend\\controllers\\controller_doacao.py||{8B382828-6202-11D1-8870-0000F87579D2}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 1,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "controller_doacao.py",
+              "DocumentMoniker": "C:\\Users\\gbsaoliveira\\Downloads\\raiz-Backend\\raiz-Backend\\controllers\\controller_doacao.py",
+              "RelativeDocumentMoniker": "raiz-Backend\\controllers\\controller_doacao.py",
+              "ToolTip": "C:\\Users\\gbsaoliveira\\Downloads\\raiz-Backend\\raiz-Backend\\controllers\\controller_doacao.py",
+              "RelativeToolTip": "raiz-Backend\\controllers\\controller_doacao.py",
+              "ViewState": "AgIAABoAAAAAAAAAAAAqwFcAAAAsAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.002457|",
+              "WhenOpened": "2025-10-09T17:57:31.867Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "route_rota.py",
+              "DocumentMoniker": "C:\\Users\\gbsaoliveira\\Downloads\\raiz-Backend\\raiz-Backend\\routes\\route_rota.py",
+              "RelativeDocumentMoniker": "raiz-Backend\\routes\\route_rota.py",
+              "ToolTip": "C:\\Users\\gbsaoliveira\\Downloads\\raiz-Backend\\raiz-Backend\\routes\\route_rota.py",
+              "RelativeToolTip": "raiz-Backend\\routes\\route_rota.py",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABQAAAAoAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.002457|",
+              "WhenOpened": "2025-10-09T17:45:16.478Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "route_receptor.py",
+              "DocumentMoniker": "C:\\Users\\gbsaoliveira\\Downloads\\raiz-Backend\\raiz-Backend\\routes\\route_receptor.py",
+              "RelativeDocumentMoniker": "raiz-Backend\\routes\\route_receptor.py",
+              "ToolTip": "C:\\Users\\gbsaoliveira\\Downloads\\raiz-Backend\\raiz-Backend\\routes\\route_receptor.py",
+              "RelativeToolTip": "raiz-Backend\\routes\\route_receptor.py",
+              "ViewState": "AgIAABoAAAAAAAAAAAAqwD4AAAAhAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.002457|",
+              "WhenOpened": "2025-10-09T17:38:04.055Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "route_motorista.py",
+              "DocumentMoniker": "C:\\Users\\gbsaoliveira\\Downloads\\raiz-Backend\\raiz-Backend\\routes\\route_motorista.py",
+              "RelativeDocumentMoniker": "raiz-Backend\\routes\\route_motorista.py",
+              "ToolTip": "C:\\Users\\gbsaoliveira\\Downloads\\raiz-Backend\\raiz-Backend\\routes\\route_motorista.py",
+              "RelativeToolTip": "raiz-Backend\\routes\\route_motorista.py",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAACQAAAAiAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.002457|",
+              "WhenOpened": "2025-10-09T17:37:35.512Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "route_admin.py",
+              "DocumentMoniker": "C:\\Users\\gbsaoliveira\\Downloads\\raiz-Backend\\raiz-Backend\\routes\\route_admin.py",
+              "RelativeDocumentMoniker": "raiz-Backend\\routes\\route_admin.py",
+              "ToolTip": "C:\\Users\\gbsaoliveira\\Downloads\\raiz-Backend\\raiz-Backend\\routes\\route_admin.py",
+              "RelativeToolTip": "raiz-Backend\\routes\\route_admin.py",
+              "ViewState": "AgIAAAwAAAAAAAAAAAAAAAEAAAAoAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.002457|",
+              "WhenOpened": "2025-10-09T17:34:29.833Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "route_doacao.py",
+              "DocumentMoniker": "C:\\Users\\gbsaoliveira\\Downloads\\raiz-Backend\\raiz-Backend\\routes\\route_doacao.py",
+              "RelativeDocumentMoniker": "raiz-Backend\\routes\\route_doacao.py",
+              "ToolTip": "C:\\Users\\gbsaoliveira\\Downloads\\raiz-Backend\\raiz-Backend\\routes\\route_doacao.py",
+              "RelativeToolTip": "raiz-Backend\\routes\\route_doacao.py",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAACUAAAA/AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.002457|",
+              "WhenOpened": "2025-10-09T17:34:27.45Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "route_estoque.py",
+              "DocumentMoniker": "C:\\Users\\gbsaoliveira\\Downloads\\raiz-Backend\\raiz-Backend\\routes\\route_estoque.py",
+              "RelativeDocumentMoniker": "raiz-Backend\\routes\\route_estoque.py",
+              "ToolTip": "C:\\Users\\gbsaoliveira\\Downloads\\raiz-Backend\\raiz-Backend\\routes\\route_estoque.py",
+              "RelativeToolTip": "raiz-Backend\\routes\\route_estoque.py",
+              "ViewState": "AgIAABwAAAAAAAAAAAAqwCoAAAAXAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.002457|",
+              "WhenOpened": "2025-10-09T17:34:23.274Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "route_doador.py",
+              "DocumentMoniker": "C:\\Users\\gbsaoliveira\\Downloads\\raiz-Backend\\raiz-Backend\\routes\\route_doador.py",
+              "RelativeDocumentMoniker": "raiz-Backend\\routes\\route_doador.py",
+              "ToolTip": "C:\\Users\\gbsaoliveira\\Downloads\\raiz-Backend\\raiz-Backend\\routes\\route_doador.py",
+              "RelativeToolTip": "raiz-Backend\\routes\\route_doador.py",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAACYAAAAtAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.002457|",
+              "WhenOpened": "2025-10-09T17:27:43.303Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "auth.py",
+              "DocumentMoniker": "C:\\Users\\gbsaoliveira\\Downloads\\raiz-Backend\\raiz-Backend\\middleware\\auth.py",
+              "RelativeDocumentMoniker": "raiz-Backend\\middleware\\auth.py",
+              "ToolTip": "C:\\Users\\gbsaoliveira\\Downloads\\raiz-Backend\\raiz-Backend\\middleware\\auth.py",
+              "RelativeToolTip": "raiz-Backend\\middleware\\auth.py",
+              "ViewState": "AgIAABoAAAAAAAAAAAAswCgAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.002457|",
+              "WhenOpened": "2025-10-09T17:23:06.394Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
