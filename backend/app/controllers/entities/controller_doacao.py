@@ -1,6 +1,6 @@
 from app.models.entities.model_doacao import Doacao
 from pydantic import ValidationError
-from app.models.entities.model_motorista import Motorista
+from app.models.entities.model_usuarioUnificado import Motorista
 from app.controllers.entities import controller_estoque
 from flask_jwt_extended import get_jwt_identity
 
@@ -19,9 +19,30 @@ def create_doacao(data, id_doador):
     except Exception as e:
         return None, str(e)
 
-def get_all_doacoes():
+def get_all_doacoes(claims, status=None):
+    """
+    Busca todas as doações, filtradas por role e status.
+    """
     try:
-        doacoes = Doacao.find_all()
+        query = {} # Começa com uma query vazia
+        role = claims.get('role')
+        user_id = claims.get('sub') # 'sub' é o 'identity' (o ID do usuário)
+
+        if status:
+            query['status'] = status
+        
+        # Filtra por usuário
+        if role == 'admin':
+            pass # Admin vê tudo, não adiciona filtro
+        elif role == 'doador':
+            query['doador_id'] = user_id
+        elif role == 'receptor':
+            query['receptor_id'] = user_id
+        elif role == 'motorista':
+            query['motorista_id'] = user_id
+        
+
+        doacoes = Doacao.find_all(query) 
         return [doacao.dict() for doacao in doacoes], None
     except Exception as e:
         return None, str(e)

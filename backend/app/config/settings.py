@@ -13,14 +13,11 @@ class Config:
     JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY', 'jwt-secret-string')
     JWT_ACCESS_TOKEN_EXPIRES = int(os.getenv('JWT_ACCESS_TOKEN_EXPIRES', 3600))
     
-    # Database
     DB_URI = os.getenv('DB_URI', 'mongodb://localhost:27017/doacoesDB')
     
-    # Logging
     LOG_LEVEL = os.getenv('LOG_LEVEL', 'INFO')
     LOG_FILE = os.getenv('LOG_FILE', 'logs/app.log')
     
-    # CORS
     CORS_ORIGINS = os.getenv('CORS_ORIGINS', 'http://localhost:3000').split(',')
 
 class DevelopmentConfig(Config):
@@ -38,7 +35,6 @@ class TestingConfig(Config):
     TESTING = True
     DB_URI = os.getenv('TEST_DB_URI', 'mongodb://localhost:27017/doacoesDB_test')
 
-# Configuração por ambiente
 config = {
     'development': DevelopmentConfig,
     'production': ProductionConfig,

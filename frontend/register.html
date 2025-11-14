@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro - Rota do Bem</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600&family=Inter:wght@400;500&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #E67E22;
+            --primary-dark: #F39C12;
+            --dark: #2d3748;
+            --gray: #718096;
+            --light: #f7fafc;
+            --border: #e2e8f0;
+            --font-title: 'Poppins', sans-serif;
+            --font-body: 'Inter', sans-serif;
+            --footer-bg: #1a202c;
+            --footer-text: #e2e8f0;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-body);
+            background: linear-gradient(135deg, #f9b57a 0%, #e67e22 70%, #f39c12 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--dark);
+            padding: 20px;
+            margin: 0;
+        }
+
+        .register-wrapper {
+            display: grid;
+            grid-template-columns: 1fr 380px;
+            gap: 2rem;
+            width: 100%;
+            max-width: 1200px;
+            animation: fadeUp 0.8s ease-out;
+        }
+
+        .register-card {
+            background: rgba(255, 255, 255, 0.96);
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(12px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .register-header {
+            background: var(--primary);
+            color: white;
+            text-align: center;
+            padding: 2.5rem 2rem;
+        }
+
+        .register-header h1 {
+            font-family: var(--font-title);
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .register-header p {
+            opacity: 0.9;
+            font-size: 1rem;
+        }
+
+        .register-body {
+            padding: 2.5rem;
+            flex: 1;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+
+        .register-footer a {
+            color: var(--footer-bg) !important;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .register-footer a:hover {
+            text-decoration: underline;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 1.2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.2rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--dark);
+            font-size: 0.95rem;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.2);
+        }
+
+        .form-group input.error,
+        .form-group select.error {
+            border-color: #f56565;
+            box-shadow: 0 0 0 3px rgba(245, 101, 101, 0.2);
+        }
+
+        .form-group small {
+            color: #f56565;
+            font-size: 0.8rem;
+            margin-top: 0.4rem;
+            display: block;
+            min-height: 1.2em;
+        }
+
+        .section-title {
+            font-family: var(--font-title);
+            font-size: 1.3rem;
+            color: var(--primary);
+            margin: 1.5rem 0 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #fed7aa;
+        }
+
+        .extra-fields {
+            background: #fdf8f6;
+            padding: 1.5rem;
+            border-radius: 16px;
+            margin: 1.5rem 0;
+            border: 1px solid #fee6d1;
+            display: none;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin: 1rem 0;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+            transform: scale(1.2);
+        }
+
+        .btn-register {
+            width: 100%;
+            padding: 16px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-family: var(--font-title);
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 1rem;
+        }
+
+        .btn-register:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(255, 107, 53, 0.3);
+        }
+
+        .btn-register:disabled {
+            background: #a0aec0;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .register-footer {
+            text-align: center;
+            margin-top: 2rem;
+            font-size: 0.95rem;
+            color: var(--gray);
+        }
+
+        .register-footer a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .register-footer a:hover {
+            text-decoration: underline;
+        }
+
+        .alert {
+            padding: 14px;
+            border-radius: 12px;
+            margin-top: 1rem;
+            font-size: 0.95rem;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .alert-error {
+            background: #fee2e2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+        }
+
+        .alert-success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+
+        .info-panel {
+            background: rgba(255, 255, 255, 0.96);
+            border-radius: 24px;
+            padding: 1.5rem;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(12px);
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            max-width: 340px;
+            height: fit-content;
+            align-self: center;
+            animation: slideInRight 0.8s ease-out;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+            margin: 0.5rem 0;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 0.9rem 0.5rem;
+            background: #fff8f0;
+            border-radius: 16px;
+            border: 1px solid #fed7aa;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-height: 78px;
+        }
+
+        /* CAMPANHA DE NATAL */
+        .natal-campaign {
+            background: linear-gradient(135deg, #fff1f0 0%, #fef3c7 100%);
+            padding: 1.5rem;
+            border-radius: 16px;
+            border: 1px solid #fed7aa;
+            text-align: center;
+            margin-top: 1rem;
+            animation: fadeIn 1s ease-out 0.5s both;
+        }
+
+        .natal-quote {
+            font-style: italic;
+            color: #9c4221;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+            position: relative;
+        }
+
+        .natal-quote i {
+            color: var(--primary);
+            font-size: 0.8rem;
+            opacity: 0.7;
+        }
+
+        .qr-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .qr-code {
+            width: 100px;
+            height: 100px;
+            border-radius: 12px;
+            border: 3px solid white;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .qr-code:hover {
+            transform: scale(1.1);
+        }
+
+        .qr-text {
+            font-size: 0.8rem;
+            color: var(--gray);
+            font-weight: 500;
+        }
+
+        /* ANIMAÇÕES */
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(50px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* RESPONSIVO */
+        @media (max-width: 992px) {
+            .register-wrapper {
+                grid-template-columns: 1fr;
+                max-width: 600px;
+            }
+
+            .info-panel {
+                order: -1;
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .register-body,
+            .info-panel {
+                padding: 1.5rem;
+            }
+
+            .register-header {
+                padding: 2rem 1.5rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="register-wrapper">
+        <div class="register-card">
+            <div class="register-header">
+                <h1>Rota do Bem</h1>
+                <p>Aqui começa sua jornada para fazer a diferença, cadastre-se!</p>
+            </div>
+
+            <div class="register-body">
+                <form id="register-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="nome">Nome (Seu nome, ou da Instituição/Empresa)</label>
+                            <input type="text" id="nome" name="nome" required>
+                            <small></small>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <input type="email" id="email" name="email" required>
+                            <small></small>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="senha">Senha</label>
+                            <input type="password" id="senha" name="senha" required minlength="6">
+                            <small></small>
+                        </div>
+                        <div class="form-group">
+                            <label for="confirmar_senha">Confirmar senha</label>
+                            <input type="password" id="confirmar_senha" name="confirmar_senha" required>
+                            <small></small>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="role">Tipo de usuário</label>
+                        <select id="role" name="role" required>
+                            <option value="">Selecione um tipo...</option>
+                            <option value="doador">Doador (Empresa, Mercado, etc)</option>
+                            <option value="motorista">Motorista (Voluntário)</option>
+                            <option value="receptor">Receptor (ONG, Instituição)</option>
+                        </select>
+                        <small></small>
+                    </div>
+
+                    <div id="motorista-fields" class="extra-fields">
+                        <h4 class="section-title">Dados do Motorista</h4>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="cpf">CPF</label>
+                                <input type="text" id="cpf" name="cpf" placeholder="000.000.000-00">
+                                <small></small>
+                            </div>
+                            <div class="form-group">
+                                <label for="cnh">CNH</label>
+                                <input type="text" id="cnh" name="cnh">
+                                <small></small>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="placa_veiculo">Placa do Veículo</label>
+                            <input type="text" id="placa_veiculo" name="placa_veiculo" placeholder="ABC-1234">
+                            <small></small>
+                        </div>
+                    </div>
+
+                    <div id="instituicao-fields" class="extra-fields">
+                        <h4 class="section-title">Dados da Instituição/Empresa</h4>
+                        <div class="form-group">
+                            <label for="cnpj">CNPJ</label>
+                            <input type="text" id="cnpj" name="cnpj" placeholder="00.000.000/0000-00">
+                            <small></small>
+                        </div>
+
+                        <h5 class="section-title">Endereço</h5>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>CEP</label>
+                                <input type="text" name="endereco_cep" placeholder="00000-000">
+                                <small></small>
+                            </div>
+                            <div class="form-group">
+                                <label>Logradouro</label>
+                                <input type="text" name="endereco_logradouro">
+                                <small></small>
+                            </div>
+                            <div class="form-group">
+                                <label>Número</label>
+                                <input type="text" name="endereco_numero">
+                                <small></small>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Bairro</label>
+                                <input type="text" name="endereco_bairro">
+                                <small></small>
+                            </div>
+                            <div class="form-group">
+                                <label>Cidade</label>
+                                <input type="text" name="endereco_cidade">
+                                <small></small>
+                            </div>
+                            <div class="form-group">
+                                <label>Estado</label>
+                                <input type="text" name="endereco_estado" maxlength="2" placeholder="SP">
+                                <small></small>
+                            </div>
+                        </div>
+
+                        <h5 class="section-title">Responsável Legal</h5>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Nome do Responsável</label>
+                                <input type="text" name="responsavel_legal_nome">
+                                <small></small>
+                            </div>
+                            <div class="form-group">
+                                <label>CPF do Responsável</label>
+                                <input type="text" name="responsavel_legal_cpf" placeholder="000.000.000-00">
+                                <small></small>
+                            </div>
+                            <div class="form-group">
+                                <label>Cargo</label>
+                                <input type="text" name="responsavel_legal_cargo">
+                                <small></small>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Horário de Disponibilidade</label>
+                            <input type="text" name="horario_disponibilidade" placeholder="Ex: Seg a Sex, 08h-18h">
+                            <small></small>
+                        </div>
+
+                        <div class="checkbox-group">
+                            <input type="checkbox" name="declaracao_anvisa" id="anvisa">
+                            <label for="anvisa">Declaro seguir as normas da ANVISA</label>
+                        </div>
+
+                        <div id="receptor-fields" class="extra-fields"
+                            style="background: #f0fdfa; border: 1px solid #ccfbf1; margin-top: 1.5rem;">
+                            <h5 class="section-title">Dados Específicos do Receptor</h5>
+                            <div class="checkbox-group">
+                                <input type="checkbox" name="alvara_sanitario" id="alvara">
+                                <label for="alvara">Possui Alvará Sanitário</label>
+                            </div>
+                            <div class="form-group">
+                                <label>Número de Beneficiários</label>
+                                <input type="number" name="numero_beneficiarios" min="0" value="0">
+                                <small></small>
+                            </div>
+                            <div class="form-group">
+                                <label>Capacidade de Armazenamento</label>
+                                <input type="text" name="capacidade_armazenamento"
+                                    placeholder="Ex: 2 freezers, 3 prateleiras">
+                                <small></small>
+                            </div>
+                        </div>
+
+                        <div id="doador-fields" class="extra-fields"
+                            style="background: #fff7ed; border: 1px solid #fed7aa; margin-top: 1.5rem;">
+                            <h5 class="section-title">Dados Específicos do Doador</h5>
+                            <div class="form-group">
+                                <label>Frequência de Doação</label>
+                                <input type="text" name="frequencia_doacao" placeholder="Ex: Diária, Semanal">
+                                <small></small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-register">Criar Conta</button>
+                    <div id="register-message" class="alert" style="display: none;"></div>
+                </form>
+
+                <div class="register-footer">
+                    <p>Já tem conta? <a href="/login" style="color: var(--primary); font-weight: 600;">Fazer login</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="info-panel">
+            <div>
+                <h3>Sobre a Rota do Bem</h3>
+                <p>
+                    Reduzimos o desperdício e combatemos a fome com rotas inteligentes e voluntários dedicados.
+                </p>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <i class="fas fa-utensils"></i>
+                    <div class="stat-number">+53.809</div>
+                    <div class="stat-label">Refeições doadas</div>
+                </div>
+                <div class="stat-item">
+                    <i class="fas fa-building"></i>
+                    <div class="stat-number">15</div>
+                    <div class="stat-label">Instituições</div>
+                </div>
+                <div class="stat-item">
+                    <i class="fas fa-truck"></i>
+                    <div class="stat-number">1.800km</div>
+                    <div class="stat-label">Rotas percorridas</div>
+                </div>
+                <div class="stat-item">
+                    <i class="fas fa-hands-helping"></i>
+                    <div class="stat-number">220</div>
+                    <div class="stat-label">Voluntários</div>
+                </div>
+            </div>
+            <div class="natal-campaign">
+                <p class="natal-quote">
+                    <i class="fas fa-quote-left"></i>
+                    Neste Natal, faça parte da corrente do bem. Sua doação transforma vidas.
+                    <i class="fas fa-quote-right"></i>
+                </p>
+                <div class="qr-container">
+                    <img src="/images/qr-natal.png" alt="QR Code Campanha Natal" class="qr-code">
+                    <p class="qr-text">Escaneie ou clique em 'Saiba mais' para ficar por dentro sobre nossa campanha de
+                        Natal</p>
+                </div>
+            </div>
+            <a href="/" class="btn-saiba-mais">Saiba Mais</a>
+        </div>
+    </div>
+
+    <script>
+        const roleSelect = document.getElementById('role');
+        const motoristaFields = document.getElementById('motorista-fields');
+        const instituicaoFields = document.getElementById('instituicao-fields');
+        const receptorFields = document.getElementById('receptor-fields');
+        const doadorFields = document.getElementById('doador-fields');
+
+        roleSelect.addEventListener('change', () => {
+            const role = roleSelect.value;
+            motoristaFields.style.display = 'none';
+            instituicaoFields.style.display = 'none';
+            receptorFields.style.display = 'none';
+            doadorFields.style.display = 'none';
+
+            if (role === 'motorista') {
+                motoristaFields.style.display = 'block';
+            } else if (role === 'doador') {
+                instituicaoFields.style.display = 'block';
+                doadorFields.style.display = 'block';
+            } else if (role === 'receptor') {
+                instituicaoFields.style.display = 'block';
+                receptorFields.style.display = 'block';
+            }
+        });
+
+        // ENVIO DO FORMULÁRIO
+        document.getElementById('register-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const form = e.target;
+            const data = Object.fromEntries(new FormData(form));
+            const msg = document.getElementById('register-message');
+            const btn = form.querySelector('.btn-register');
+
+            clearErrors();
+
+            if (!validateForm(data)) return;
+
+            btn.disabled = true;
+            btn.textContent = 'Criando conta...';
+
+            try {
+                const payload = buildPayload(data);
+
+                const res = await fetch('http://localhost:5000/api/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await res.json();
+
+                if (!res.ok) {
+                    // Mostra erros de validação do Pydantic
+                    const err = Array.isArray(result.erro)
+                        ? result.erro.map(e => `${e.loc.join(' → ')}: ${e.msg}`).join('<br>')
+                        : (result.erro || 'Erro desconhecido');
+                    throw new Error(err);
+                }
+
+                showAlert('Cadastro realizado com sucesso! Redirecionando...', 'success');
+                setTimeout(() => window.location.href = '/login', 2000);
+
+            } catch (err) {
+                showAlert(err.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Criar Conta';
+            }
+        });
+
+        function validateForm(data) {
+            let valid = true;
+            if (!data.nome) { showError('nome', 'Nome é obrigatório'); valid = false; }
+            if (!data.email.includes('@')) { showError('email', 'Email inválido'); valid = false; }
+            if (data.senha.length < 6) { showError('senha', 'Mínimo 6 caracteres'); valid = false; }
+            if (data.senha !== data.confirmar_senha) { showError('confirmar_senha', 'Senhas não coincidem'); valid = false; }
+            if (!data.role) { showError('role', 'Selecione um tipo'); valid = false; }
+
+            // Validações extras de role
+            if (data.role === 'motorista') {
+                if (!data.cpf) { showError('cpf', 'CPF é obrigatório'); valid = false; }
+                if (!data.cnh) { showError('cnh', 'CNH é obrigatória'); valid = false; }
+            }
+            if (data.role === 'doador' || data.role === 'receptor') {
+                if (!data.cnpj) { showError('cnpj', 'CNPJ é obrigatório'); valid = false; }
+                if (!data.endereco_cep) { showError('endereco_cep', 'CEP é obrigatório'); valid = false; }
+            }
+
+            return valid;
+        }
+
+        function buildPayload(data) {
+            const payload = {
+                nome: data.nome,
+                email: data.email,
+                senha: data.senha,
+                confirmar_senha: data.confirmar_senha,
+                role: data.role
+            };
+
+            if (data.role === 'motorista') {
+                payload.cpf = data.cpf;
+                payload.cnh = data.cnh;
+                payload.placa_veiculo = data.placa_veiculo;
+            } else if (['doador', 'receptor'].includes(data.role)) {
+                payload.cnpj = data.cnpj;
+                payload.horario_disponibilidade = data.horario_disponibilidade;
+                payload.declaracao_anvisa = data.declaracao_anvisa === 'on';
+
+                payload.endereco = {
+                    cep: data.endereco_cep,
+                    logradouro: data.endereco_logradouro,
+                    numero: data.endereco_numero,
+                    bairro: data.endereco_bairro,
+                    cidade: data.endereco_cidade,
+                    estado: data.endereco_estado,
+                    complemento: null
+                };
+
+                payload.responsavel_legal = {
+                    nome_completo: data.responsavel_legal_nome,
+                    cpf: data.responsavel_legal_cpf,
+                    cargo: data.responsavel_legal_cargo
+                };
+
+                if (data.role === 'receptor') {
+                    payload.alvara_sanitario = data.alvara_sanitario === 'on';
+                    payload.numero_beneficiarios = parseInt(data.numero_beneficiarios) || 0;
+                    payload.capacidade_armazenamento = data.capacidade_armazenamento;
+                } else { // é 'doador'
+                    payload.frequencia_doacao = data.frequencia_doacao;
+                    // Adiciona campos "vazios" que o receptor precisa, para o Pydantic validar
+                    payload.alvara_sanitario = false;
+                    payload.numero_beneficiarios = 0;
+                    payload.capacidade_armazenamento = "";
+                }
+            }
+
+            // Adiciona campos "vazios" que o doador precisa se for receptor
+            if (data.role === 'receptor') {
+                payload.frequencia_doacao = "";
+            }
+
+            return payload;
+        }
+
+        function showError(field, message) {
+            const el = document.querySelector(`[name="${field}"]`);
+            if (el) {
+                el.classList.add('error');
+                const small = el.parentElement.querySelector('small');
+                if (small) small.innerHTML = message;
+            }
+        }
+
+        function clearErrors() {
+            document.querySelectorAll('.error').forEach(el => el.classList.remove('error'));
+            document.querySelectorAll('small').forEach(s => s.textContent = '');
+            document.getElementById('register-message').style.display = 'none';
+        }
+
+        function showAlert(message, type) {
+            const msg = document.getElementById('register-message');
+            msg.innerHTML = message;
+            msg.className = `alert alert-${type}`;
+            msg.style.display = 'block';
+        }
+    </script>
+</body>
+
+</html>

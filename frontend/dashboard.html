@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Rota do Bem</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+
+    <style>
+        .nav-item a.active {
+            background: #667eea;
+            color: white;
+            font-weight: 600;
+        }
+
+        #doacoes-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .donation-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            border: 1px solid #eee;
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .donation-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+        }
+
+        .donation-card-header {
+            background: #f9f9f9;
+            padding: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .donation-card-header h4 {
+            font-size: 1.2rem;
+            color: #333;
+            margin: 0;
+        }
+
+        .donation-card-body {
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 0.95rem;
+            color: #555;
+        }
+
+        .info-item i {
+            width: 20px;
+            text-align: center;
+            color: #667eea;
+        }
+
+        .donation-card-footer {
+            padding: 1rem 1.5rem;
+            background: #fdfdfd;
+            border-top: 1px solid #eee;
+        }
+
+        .btn-details {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+
+        #modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(5px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        #modal-content {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+
+        #modal-close {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 1.5rem;
+            color: #aaa;
+            cursor: pointer;
+            border: none;
+            background: none;
+        }
+
+        #modal-body {
+            margin-top: 1rem;
+        }
+
+        #modal-footer {
+            margin-top: 1.5rem;
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn-accept {
+            flex: 1;
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-cancel {
+            flex: 1;
+            background: #eee;
+            color: #555;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+        }
+    </style>
+    <div class="container">
+        <header class="header">
+            <h1 class="logo">Rota do Bem - Admin</h1>
+            <p class="subtitle">Painel de Gerenciamento de Doações</p>
+            <div class="status">
+            </div>
+        </header>
+
+        <nav class="nav">
+            <ul class="nav-list">
+                <li class="nav-item"><a href="#" data-page="dashboard">Dashboard</a></li>
+                <li class="nav-item"><a href="#" data-page="doacoes">Doações</a></li>
+                <li class="nav-item"><a href="#" data-page="doadores">Doadores</a></li>
+                <li class="nav-item"><a href="#" data-page="receptores">Receptores</a></li>
+                <li class="nav-item"><a href="#" data-page="estoque">Estoque</a></li>
+                <li class="nav-item"><a href="#" data-page="rotas">Rotas</a></li>
+                <li class="nav-item"><a href="#" id="logout-btn">Sair</a></li>
+            </ul>
+        </nav>
+
+        <main>
+            <div id="page-dashboard" class="page">
+                <div class="card">
+                    <h3>Estatísticas Gerais</h3>
+                    <div class="stats-container">
+                    </div>
+                </div>
+            </div>
+
+            <div id="page-doacoes" class="page" style="display: none;">
+                <div class="card">
+                    <h3 id="doacoes-title">Doações Disponíveis</h3>
+                    <div id="doacoes-list">
+
+                        <div id="page-doadores" class="page" style="display: none;">
+                            <div class="table-container">
+                                <h3>Doadores Cadastrados</h3>
+                                <div id="doadores-list"></div>
+                            </div>
+                        </div>
+
+                        <div id="page-receptores" class="page" style="display: none;">
+                            <div class="table-container">
+                                <h3>Receptores Cadastrados</h3>
+                                <div id="receptores-list"></div>
+                            </div>
+                        </div>
+
+                        <div id="page-estoque" class="page" style="display: none;">
+                            <div class="table-container">
+                                <h3>Controle de Estoque</h3>
+                                <div id="estoque-list"></div>
+                            </div>
+                        </div>
+
+                        <div id="page-rotas" class="page" style="display: none;">
+                            <div class="table-container">
+                                <h3>Gerenciamento de Rotas</h3>
+                                <div id="rotas-list"></div>
+                            </div>
+                        </div>
+        </main>
+    </div>
+
+    <div id="modal-overlay">
+        <div id="modal-content">
+            <button id="modal-close">&times;</button>
+            <h3 id="modal-title">Detalhes da Doação</h3>
+            <div id="modal-body">
+            </div>
+            <div id="modal-footer">
+                <button class="btn-cancel">Voltar</button>
+                <button class="btn-accept">Aceitar Doação</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/app.js"></script>
+</body>
+
+</html>

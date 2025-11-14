@@ -10,10 +10,9 @@ import os
 
 def main():
     """Função principal para executar a aplicação"""
-    # Criar a aplicação usando o factory pattern
     app = create_app()
     
-    # Configuração baseada no ambiente
+    # Configuração do ambiente
     env = os.getenv('FLASK_ENV', 'development')
     app.config.from_object(config[env])
     
@@ -35,8 +34,7 @@ def main():
     print("=" * 50)
     print("💡 Pressione Ctrl+C para parar o servidor")
     print("-" * 50)
-    
-    # Executar a aplicação
+ 
     app.run(
         host=host,
         port=port,

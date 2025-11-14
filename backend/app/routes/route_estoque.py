@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
+
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import get_jwt_identity, get_jwt
 from app.controllers.entities import controller_estoque
-# Importe ambos os decorators
 from app.middleware.auth import auth_required, role_required
 
 estoque_routes = Blueprint('estoque_routes', __name__)
@@ -17,7 +17,6 @@ def get_estoque_por_receptor(receptor_id):
     id_usuario_logado = get_jwt_identity()
     claims = get_jwt()
     
-    # Lógica de Autorização:
     if claims.get("role") != 'admin' and id_usuario_logado != receptor_id:
         return jsonify({"erro": "Acesso não autorizado"}), 403
 
@@ -63,4 +62,23 @@ def ajustar_item(item_id):
     response, error = controller_estoque.ajustar_quantidade_item(item_id, data)
     if error:
         return jsonify({"erro": error}), 400
+    return jsonify(response), 200
+
+@estoque_routes.route('/estoque/<string:item_id>/baixa', methods=['PUT'])
+@auth_required 
+def dar_baixa_item(item_id):
+    """
+    Endpoint para RECEPTOR ou ADMIN registrar a SAÍDA de um item do estoque.
+    O JSON deve conter: {"quantidade": valor_da_saida}
+    """
+    id_usuario_logado = get_jwt_identity()
+    claims = get_jwt() 
+    data = request.get_json()
+    
+    response, error = controller_estoque.dar_baixa_estoque(item_id, data, id_usuario_logado, claims)
+    
+    if error:
+        status_code = 403 if "Acesso não autorizado" in error else 400
+        return jsonify({"erro": error}), status_code
+    
     return jsonify(response), 200

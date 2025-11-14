@@ -12,7 +12,7 @@ class Doacao(BaseModel):
     quantidade: float
     unidade: str  
     validade: date
-    status: str = 'pendente'  # 'pendente', 'aceita', '� caminho', 'expirada'
+    status: str = 'pendente'  # 'pendente', 'aceita', 'a caminho', 'expirada'
     data_criacao: date = date.today()
     receptor_id: Optional[str] = None
     motorista_id: Optional[str] = None
@@ -49,12 +49,12 @@ class Doacao(BaseModel):
         return None
 
     @classmethod
-    def find_all(cls, status: Optional[str] = None):
+    def find_all(cls, query: dict = {}): # Mude de 'status' para 'query'
+        """Busca doações usando um filtro (query) do MongoDB."""
         db = connect_db()
-        query = {}
-        if status:
-            query['status'] = status
-        doacoes = list(db.doacoes.find(query))
+        # 'query' pode ser {'status': 'pendente', 'receptor_id': '...'}
+        doacoes = list(db.doacoes.find(query)) 
+        
         for d in doacoes:
             d['_id'] = str(d['_id'])
         return [cls(**d) for d in doacoes]

@@ -1,546 +1,352 @@
-// Rota do Bem - Frontend JavaScript
 class RotaDoBemApp {
     constructor() {
         this.apiUrl = 'http://localhost:5000/api';
-        this.currentUser = null;
+        this.token = localStorage.getItem('rota_token');
+        this.role = localStorage.getItem('rota_role');
+        this.currentPage = 'dashboard';
         this.init();
     }
 
     init() {
-        this.checkApiStatus();
-        this.setupEventListeners();
-        this.loadInitialData();
-    }
-
-    // Verificar status da API
-    async checkApiStatus() {
-        try {
-            const response = await fetch(`${this.apiUrl}`);
-            const data = await response.json();
-            
-            const statusElement = document.querySelector('.status');
-            if (data.status) {
-                statusElement.className = 'status status-online';
-                statusElement.innerHTML = `
-                    <h3>✅ Backend Online</h3>
-                    <p>Sistema funcionando corretamente!</p>
-                    <p><strong>Versão:</strong> ${data.versao || '1.0.0'}</p>
-                `;
-            }
-        } catch (error) {
-            console.error('API não está respondendo:', error);
-            const statusElement = document.querySelector('.status');
-            statusElement.className = 'status status-offline';
-            statusElement.innerHTML = `
-                <h3>❌ Backend Offline</h3>
-                <p>Verifique se o servidor está rodando</p>
-                <p>Execute: <code>python run.py</code></p>
-            `;
+        if (document.getElementById('login-form')) {
+            this.initLoginPage();
+        } else if (document.querySelector('.nav-list')) {
+            this.initDashboardPage();
         }
     }
 
-    // Configurar event listeners
-    setupEventListeners() {
-        // Navegação
+    initLoginPage() {
+        const form = document.getElementById('login-form');
+        if (form) {
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                this.handleLogin(e.target);
+            });
+        }
+    }
+
+    async handleLogin(form) {
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData);
+        const errorElement = document.getElementById('login-error');
+
+        try {
+            const response = await fetch(`${this.apiUrl}/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data),
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) throw new Error(result.erro || 'Erro no login');
+
+            // SALVA TOKEN + ROLE
+            localStorage.setItem('rota_token', result.access_token);
+            localStorage.setItem('rota_role', result.role);
+
+            window.location.href = '/dashboard';
+        } catch (error) {
+            errorElement.textContent = error.message;
+            errorElement.style.display = 'block';
+        }
+    }
+
+    initDashboardPage() {
+        if (!this.token) {
+            window.location.href = '/login';
+            return;
+        }
+
+        this.applyRolePermissions();
+        this.setupNavigation();
+        this.setupLogout();
+        this.loadPage(this.currentPage);
+        this.setupModal();
+
+        this.loadPage('dashboard'); // Carrega a página inicial
+    }
+
+    setupModal() {
+        const overlay = document.getElementById('modal-overlay');
+        const closeBtn = document.getElementById('modal-close');
+        const cancelBtn = document.querySelector('#modal-footer .btn-cancel');
+
+        const closeModal = () => {
+            overlay.style.display = 'none';
+        };
+
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) closeModal();
+        });
+        closeBtn.addEventListener('click', closeModal);
+        cancelBtn.addEventListener('click', closeModal);
+    }
+
+    applyRolePermissions() {
+        const permissions = {
+            admin: ['dashboard', 'doacoes', 'doadores', 'receptores', 'estoque', 'rotas'],
+            doador: ['dashboard', 'doacoes', 'estoque'],
+            receptor: ['dashboard', 'doacoes', 'estoque'],
+            motorista: ['dashboard', 'doacoes', 'rotas'],
+            estoquista: ['dashboard', 'doacoes', 'estoque']
+        };
+
+        const allowed = permissions[this.role] || ['dashboard'];
+
+        document.querySelectorAll('.nav-item a').forEach(link => {
+            const page = link.getAttribute('data-page');
+            if (!allowed.includes(page)) {
+                link.parentElement.style.display = 'none';
+            }
+        });
+
+        document.querySelectorAll('.page').forEach(page => {
+            const id = page.id.replace('page-', '');
+            if (!allowed.includes(id)) {
+                page.style.display = 'none';
+            }
+        });
+    }
+
+
+    setupNavigation() {
         document.querySelectorAll('.nav-item a').forEach(link => {
             link.addEventListener('click', (e) => {
                 e.preventDefault();
-                const page = e.target.getAttribute('data-page');
-                this.showPage(page);
+                const page = link.getAttribute('data-page');
+                this.loadPage(page);
             });
         });
+    }
 
-        // Formulários
-        document.querySelectorAll('form').forEach(form => {
-            form.addEventListener('submit', (e) => {
+    loadPage(page) {
+        const allowed = this.getAllowedPages();
+        if (!allowed.includes(page)) {
+            this.showAlert('Acesso negado a esta área.', 'error');
+            return;
+        }
+
+        document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
+        const target = document.getElementById(`page-${page}`);
+        if (target) target.style.display = 'block';
+
+        this.currentPage = page;
+        this.highlightActiveNav(page);
+
+        this[`load${page.charAt(0).toUpperCase() + page.slice(1)}`]?.();
+    }
+
+    getAllowedPages() {
+        const map = {
+            admin: ['dashboard', 'doacoes', 'doadores', 'receptores', 'estoque', 'rotas'],
+            doador: ['dashboard', 'doacoes', 'estoque'],
+            receptor: ['dashboard', 'doacoes', 'estoque'],
+            motorista: ['dashboard', 'doacoes', 'rotas'],
+            estoquista: ['dashboard', 'doacoes', 'estoque']
+        };
+        return map[this.role] || ['dashboard'];
+    }
+
+    highlightActiveNav(page) {
+        document.querySelectorAll('.nav-item a').forEach(link => {
+            link.classList.toggle('active', link.getAttribute('data-page') === page);
+        });
+    }
+
+    setupLogout() {
+        const logoutBtn = document.getElementById('logout-btn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', (e) => {
                 e.preventDefault();
-                this.handleFormSubmit(e.target);
+                localStorage.removeItem('rota_token');
+                localStorage.removeItem('rota_role');
+                window.location.href = '/login';
             });
-        });
-    }
-
-    // Carregar dados iniciais
-    async loadInitialData() {
-        // Carregar estatísticas se existir
-        await this.loadStats();
-    }
-
-    // Mostrar página específica
-    showPage(page) {
-        // Esconder todas as páginas
-        document.querySelectorAll('.page').forEach(p => {
-            p.style.display = 'none';
-        });
-
-        // Mostrar página selecionada
-        const targetPage = document.getElementById(`page-${page}`);
-        if (targetPage) {
-            targetPage.style.display = 'block';
-        }
-
-        // Carregar dados da página
-        this.loadPageData(page);
-    }
-
-    // Carregar dados da página
-    async loadPageData(page) {
-        switch(page) {
-            case 'doadores':
-                await this.loadDoadores();
-                break;
-            case 'receptores':
-                await this.loadReceptores();
-                break;
-            case 'doacoes':
-                await this.loadDoacoes();
-                break;
-            case 'estoque':
-                await this.loadEstoque();
-                break;
-            case 'rotas':
-                await this.loadRotas();
-                break;
         }
     }
 
-    // Carregar estatísticas
-    async loadStats() {
+    async loadDashboard() {
+        const container = document.querySelector('#page-dashboard .stats-container');
+        container.innerHTML = '<div class="loading">Carregando estatísticas...</div>';
         try {
-            // Simular dados de estatísticas
-            const stats = {
-                totalDoadores: 150,
-                totalReceptores: 45,
-                totalDoacoes: 320,
-                totalItens: 1250
-            };
-
-            this.updateStatsDisplay(stats);
-        } catch (error) {
-            console.error('Erro ao carregar estatísticas:', error);
-        }
-    }
-
-    // Atualizar display de estatísticas
-    updateStatsDisplay(stats) {
-        const statsContainer = document.querySelector('.stats-container');
-        if (statsContainer) {
-            statsContainer.innerHTML = `
-                <div class="stat-item">
-                    <h3>${stats.totalDoadores}</h3>
-                    <p>Doadores</p>
-                </div>
-                <div class="stat-item">
-                    <h3>${stats.totalReceptores}</h3>
-                    <p>Receptores</p>
-                </div>
-                <div class="stat-item">
-                    <h3>${stats.totalDoacoes}</h3>
-                    <p>Doações</p>
-                </div>
-                <div class="stat-item">
-                    <h3>${stats.totalItens}</h3>
-                    <p>Itens Doados</p>
-                </div>
+            const stats = await this.apiFetch(`${this.apiUrl}/stats`);
+            container.innerHTML = `
+                <div class="stat-item"><strong>${stats.doacoes}</strong> Doações</div>
+                <div class="stat-item"><strong>${stats.motoristas}</strong> Motoristas</div>
+                <div class="stat-item"><strong>${stats.rotas_pendentes}</strong> Rotas Pendentes</div>
             `;
+        } catch (err) {
+            container.innerHTML = `<div class="alert alert-error">${err.message}</div>`;
         }
     }
 
-    // Carregar doadores
-    async loadDoadores() {
-        const container = document.getElementById('doadores-list');
-        if (!container) return;
-
-        container.innerHTML = '<div class="loading"><div class="spinner"></div>Carregando doadores...</div>';
-
-        try {
-            const response = await fetch(`${this.apiUrl}/doadores`);
-            const doadores = await response.json();
-            
-            this.renderDoadores(doadores);
-        } catch (error) {
-            container.innerHTML = '<div class="alert alert-error">Erro ao carregar doadores</div>';
-        }
-    }
-
-    // Renderizar doadores
-    renderDoadores(doadores) {
-        const container = document.getElementById('doadores-list');
-        if (!container) return;
-
-        if (doadores.length === 0) {
-            container.innerHTML = '<div class="alert alert-info">Nenhum doador encontrado</div>';
-            return;
-        }
-
-        const html = `
-            <table>
-                <thead>
-                    <tr>
-                        <th>Nome</th>
-                        <th>Email</th>
-                        <th>Telefone</th>
-                        <th>Endereço</th>
-                        <th>Ações</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${doadores.map(doador => `
-                        <tr>
-                            <td>${doador.nome}</td>
-                            <td>${doador.email}</td>
-                            <td>${doador.telefone}</td>
-                            <td>${doador.endereco?.cidade || 'N/A'}</td>
-                            <td>
-                                <button onclick="app.editDoador('${doador.id}')" class="btn">Editar</button>
-                            </td>
-                        </tr>
-                    `).join('')}
-                </tbody>
-            </table>
-        `;
-
-        container.innerHTML = html;
-    }
-
-    // Carregar receptores
-    async loadReceptores() {
-        const container = document.getElementById('receptores-list');
-        if (!container) return;
-
-        container.innerHTML = '<div class="loading"><div class="spinner"></div>Carregando receptores...</div>';
-
-        try {
-            const response = await fetch(`${this.apiUrl}/receptores`);
-            const receptores = await response.json();
-            
-            this.renderReceptores(receptores);
-        } catch (error) {
-            container.innerHTML = '<div class="alert alert-error">Erro ao carregar receptores</div>';
-        }
-    }
-
-    // Renderizar receptores
-    renderReceptores(receptores) {
-        const container = document.getElementById('receptores-list');
-        if (!container) return;
-
-        if (receptores.length === 0) {
-            container.innerHTML = '<div class="alert alert-info">Nenhum receptor encontrado</div>';
-            return;
-        }
-
-        const html = `
-            <table>
-                <thead>
-                    <tr>
-                        <th>Nome</th>
-                        <th>Email</th>
-                        <th>Telefone</th>
-                        <th>Endereço</th>
-                        <th>Capacidade</th>
-                        <th>Ações</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${receptores.map(receptor => `
-                        <tr>
-                            <td>${receptor.nome}</td>
-                            <td>${receptor.email}</td>
-                            <td>${receptor.telefone}</td>
-                            <td>${receptor.endereco?.cidade || 'N/A'}</td>
-                            <td>${receptor.capacidade || 'N/A'}</td>
-                            <td>
-                                <button onclick="app.editReceptor('${receptor.id}')" class="btn">Editar</button>
-                            </td>
-                        </tr>
-                    `).join('')}
-                </tbody>
-            </table>
-        `;
-
-        container.innerHTML = html;
-    }
-
-    // Carregar doações
     async loadDoacoes() {
         const container = document.getElementById('doacoes-list');
-        if (!container) return;
-
-        container.innerHTML = '<div class="loading"><div class="spinner"></div>Carregando doações...</div>';
-
+        container.innerHTML = '<div class="loading">Carregando doações...</div>';
         try {
-            const response = await fetch(`${this.apiUrl}/doacoes`);
-            const doacoes = await response.json();
-            
-            this.renderDoacoes(doacoes);
-        } catch (error) {
-            container.innerHTML = '<div class="alert alert-error">Erro ao carregar doações</div>';
+            const doacoes = await this.apiFetch(`${this.apiUrl}/doacoes`);
+            this.renderDoacoes(doacoes, container);
+        } catch (err) {
+            container.innerHTML = `<div class="alert alert-error">${err.message}</div>`;
         }
     }
 
-    // Renderizar doações
-    renderDoacoes(doacoes) {
-        const container = document.getElementById('doacoes-list');
-        if (!container) return;
+    async loadRotas() {
+        const container = document.getElementById('rotas-list');
+        container.innerHTML = '<div class="loading">Carregando rotas...</div>';
+        try {
+            const rotas = await this.apiFetch(`${this.apiUrl}/rotas?status=pendente`);
+            this.renderRotas(rotas, container);
+        } catch (err) {
+            container.innerHTML = `<div class="alert alert-error">${err.message}</div>`;
+        }
+    }
 
-        if (doacoes.length === 0) {
+    renderDoacoes(doacoes, container) {
+        if (!doacoes || doacoes.length === 0) {
             container.innerHTML = '<div class="alert alert-info">Nenhuma doação encontrada</div>';
             return;
         }
 
-        const html = `
-            <table>
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Doador</th>
-                        <th>Receptor</th>
-                        <th>Itens</th>
-                        <th>Status</th>
-                        <th>Data</th>
-                        <th>Ações</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${doacoes.map(doacao => `
-                        <tr>
-                            <td>${doacao.id}</td>
-                            <td>${doacao.doador_nome || 'N/A'}</td>
-                            <td>${doacao.receptor_nome || 'N/A'}</td>
-                            <td>${doacao.itens?.length || 0} itens</td>
-                            <td><span class="status-badge status-${doacao.status}">${doacao.status}</span></td>
-                            <td>${new Date(doacao.data_criacao).toLocaleDateString()}</td>
-                            <td>
-                                <button onclick="app.viewDoacao('${doacao.id}')" class="btn">Ver</button>
-                            </td>
-                        </tr>
-                    `).join('')}
-                </tbody>
-            </table>
-        `;
-
-        container.innerHTML = html;
+        container.innerHTML = doacoes.map(doacao => `
+            <div class="donation-card">
+                <div class="donation-card-header">
+                    <h4>${doacao.alimento}</h4>
+                </div>
+                <div class="donation-card-body">
+                    <div class="info-item">
+                        <i class="fas fa-box"></i>
+                        <span>${doacao.quantidade} ${doacao.unidade}</span>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-calendar-times"></i>
+                        <span>Validade: ${new Date(doacao.validade).toLocaleDateString()}</span>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-info-circle"></i>
+                        <span>Status: <span class="status-badge status-${doacao.status}">${doacao.status}</span></span>
+                    </div>
+                </div>
+                <div class="donation-card-footer">
+                    <!-- Chama a nova função showDonationDetails -->
+                    <button class="btn-details" onclick="app.showDonationDetails('${doacao._id}')">
+                        Ver Detalhes
+                    </button>
+                </div>
+            </div>
+        `).join('');
     }
 
-    // Carregar estoque
-    async loadEstoque() {
-        const container = document.getElementById('estoque-list');
-        if (!container) return;
+    async showDonationDetails(doacaoId) {
+        const modalOverlay = document.getElementById('modal-overlay');
+        const modalBody = document.getElementById('modal-body');
+        const modalFooter = document.getElementById('modal-footer');
 
-        container.innerHTML = '<div class="loading"><div class="spinner"></div>Carregando estoque...</div>';
+        modalBody.innerHTML = '<div class="loading">Carregando...</div>';
+        modalOverlay.style.display = 'flex';
 
         try {
-            // Simular dados de estoque
-            const estoque = [
-                { id: 1, item: 'Arroz', quantidade: 50, unidade: 'kg', receptor: 'Casa do Bem' },
-                { id: 2, item: 'Feijão', quantidade: 30, unidade: 'kg', receptor: 'Casa do Bem' },
-                { id: 3, item: 'Macarrão', quantidade: 25, unidade: 'pacotes', receptor: 'Lar dos Idosos' },
-                { id: 4, item: 'Óleo', quantidade: 15, unidade: 'litros', receptor: 'Casa do Bem' }
-            ];
-            
-            this.renderEstoque(estoque);
-        } catch (error) {
-            container.innerHTML = '<div class="alert alert-error">Erro ao carregar estoque</div>';
+            // Busca os detalhes da doação específica
+            const doacao = await this.apiFetch(`${this.apiUrl}/doacoes/${doacaoId}`);
+
+            modalBody.innerHTML = `
+                <p><strong>Alimento:</strong> ${doacao.alimento}</p>
+                <p><strong>Quantidade:</strong> ${doacao.quantidade} ${doacao.unidade}</p>
+                <p><strong>Validade:</strong> ${new Date(doacao.validade).toLocaleDateString()}</p>
+                <p><strong>Status:</strong> ${doacao.status}</p>
+                <p><strong>ID Doador:</strong> ${doacao.doador_id} (Precisamos buscar o nome)</p>
+            `;
+
+            // Lógica do botão "Aceitar"
+            if (this.role === 'receptor' && doacao.status === 'pendente') {
+                modalFooter.style.display = 'flex';
+                const acceptBtn = modalFooter.querySelector('.btn-accept');
+                acceptBtn.replaceWith(acceptBtn.cloneNode(true));
+                modalFooter.querySelector('.btn-accept').addEventListener('click', () => {
+                    this.acceptDonation(doacaoId);
+                });
+            } else {
+                modalFooter.style.display = 'none'; // Esconde botões se não puder aceitar
+            }
+
+        } catch (err) {
+            modalBody.innerHTML = `<div class="alert alert-error">${err.message}</div>`;
         }
     }
 
-    // Renderizar estoque
-    renderEstoque(estoque) {
-        const container = document.getElementById('estoque-list');
-        if (!container) return;
-
-        const html = `
-            <table>
-                <thead>
-                    <tr>
-                        <th>Item</th>
-                        <th>Quantidade</th>
-                        <th>Unidade</th>
-                        <th>Receptor</th>
-                        <th>Ações</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${estoque.map(item => `
-                        <tr>
-                            <td>${item.item}</td>
-                            <td>${item.quantidade}</td>
-                            <td>${item.unidade}</td>
-                            <td>${item.receptor}</td>
-                            <td>
-                                <button onclick="app.editEstoque('${item.id}')" class="btn">Editar</button>
-                            </td>
-                        </tr>
-                    `).join('')}
-                </tbody>
-            </table>
-        `;
-
-        container.innerHTML = html;
-    }
-
-    // Carregar rotas
-    async loadRotas() {
-        const container = document.getElementById('rotas-list');
-        if (!container) return;
-
-        container.innerHTML = '<div class="loading"><div class="spinner"></div>Carregando rotas...</div>';
-
+    async acceptDonation(doacaoId) {
         try {
-            // Simular dados de rotas
-            const rotas = [
-                { id: 1, origem: 'Doador A', destino: 'Receptor B', distancia: '5.2 km', tempo: '15 min' },
-                { id: 2, origem: 'Doador C', destino: 'Receptor D', distancia: '8.7 km', tempo: '25 min' }
-            ];
-            
-            this.renderRotas(rotas);
-        } catch (error) {
-            container.innerHTML = '<div class="alert alert-error">Erro ao carregar rotas</div>';
+            // Atualiza o status da doação para 'aceita'
+            await this.apiFetch(`${this.apiUrl}/doacoes/${doacaoId}`, {
+                method: 'PUT',
+                body: JSON.stringify({ status: 'aceita' })
+            });
+
+            document.getElementById('modal-overlay').style.display = 'none';
+            this.showAlert('Doação aceita com sucesso!', 'success');
+            this.loadPage('doacoes');
+
+        } catch (err) {
+            this.showAlert(`Erro ao aceitar doação: ${err.message}`, 'error');
         }
     }
 
-    // Renderizar rotas
-    renderRotas(rotas) {
-        const container = document.getElementById('rotas-list');
-        if (!container) return;
-
-        const html = `
+    renderRotas(rotas, container) {
+        if (rotas.length === 0) {
+            container.innerHTML = '<div class="alert alert-info">Nenhuma rota pendente</div>';
+            return;
+        }
+        container.innerHTML = `
             <table>
-                <thead>
-                    <tr>
-                        <th>Origem</th>
-                        <th>Destino</th>
-                        <th>Distância</th>
-                        <th>Tempo</th>
-                        <th>Ações</th>
-                    </tr>
-                </thead>
+                <thead><tr><th>Resumo</th><th>Distância</th><th>Duração</th><th>Status</th></tr></thead>
                 <tbody>
-                    ${rotas.map(rota => `
+                    ${rotas.map(r => `
                         <tr>
-                            <td>${rota.origem}</td>
-                            <td>${rota.destino}</td>
-                            <td>${rota.distancia}</td>
-                            <td>${rota.tempo}</td>
-                            <td>
-                                <button onclick="app.viewRota('${rota.id}')" class="btn">Ver Rota</button>
-                            </td>
+                            <td>${r.resumo_rota}</td>
+                            <td>${r.distancia_texto}</td>
+                            <td>${r.duracao_texto}</td>
+                            <td><span class="status-badge status-${r.status}">${r.status}</span></td>
                         </tr>
                     `).join('')}
                 </tbody>
-            </table>
-        `;
-
-        container.innerHTML = html;
+            </table>`;
     }
 
-    // Manipular envio de formulário
-    handleFormSubmit(form) {
-        const formData = new FormData(form);
-        const data = Object.fromEntries(formData);
-        
-        console.log('Dados do formulário:', data);
-        
-        // Aqui você implementaria a lógica de envio para a API
-        this.showAlert('Formulário enviado com sucesso!', 'success');
+    async apiFetch(url, options = {}) {
+        const headers = {
+            ...options.headers,
+            'Authorization': `Bearer ${this.token}`,
+            'Content-Type': 'application/json',
+        };
+
+        const response = await fetch(url, { ...options, headers });
+
+        if (response.status === 401 || response.status === 403) {
+            localStorage.removeItem('rota_token');
+            localStorage.removeItem('rota_role');
+            window.location.href = '/login';
+            throw new Error('Sessão expirada');
+        }
+
+        if (!response.ok) {
+            const err = await response.json();
+            throw new Error(err.erro || 'Erro na requisição');
+        }
+
+        return response.json();
     }
 
-    // Mostrar alerta
-    showAlert(message, type = 'info') {
+    showAlert(msg, type = 'info') {
         const alert = document.createElement('div');
         alert.className = `alert alert-${type}`;
-        alert.textContent = message;
-        
-        document.body.insertBefore(alert, document.body.firstChild);
-        
-        setTimeout(() => {
-            alert.remove();
-        }, 5000);
-    }
-
-    // Métodos de edição (placeholders)
-    editDoador(id) {
-        this.showAlert(`Editando doador ${id}`, 'info');
-    }
-
-    editReceptor(id) {
-        this.showAlert(`Editando receptor ${id}`, 'info');
-    }
-
-    editEstoque(id) {
-        this.showAlert(`Editando item ${id}`, 'info');
-    }
-
-    viewDoacao(id) {
-        this.showAlert(`Visualizando doação ${id}`, 'info');
-    }
-
-    viewRota(id) {
-        this.showAlert(`Visualizando rota ${id}`, 'info');
+        alert.textContent = msg;
+        document.querySelector('main').prepend(alert);
+        setTimeout(() => alert.remove(), 4000);
     }
 }
 
-// Inicializar aplicação quando o DOM estiver carregado
+// Inicializa
 document.addEventListener('DOMContentLoaded', () => {
     window.app = new RotaDoBemApp();
-    const doarBtn = document.querySelector('.cta-button.primary');
-    if (doarBtn) {
-        doarBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            var form = document.getElementById('doacao-form');
-            if (form) {
-                form.scrollIntoView({behavior:'smooth'});
-                setTimeout(function(){
-                    var nome = form.querySelector('input[name="nome"]') || form.querySelector('input');
-                    if (nome) {
-                        nome.focus();
-                        nome.style.boxShadow = '0 0 0 2px #E67E22';
-                        setTimeout(()=>{nome.style.boxShadow = ''}, 2200);
-                    }
-                }, 900);
-            }
-        });
-    }
 });
-
-// Leaflet MAP INTEGRATION
-// Função para detectar localização real do usuário e mostrar marcador
-function localizarUsuarioNoMapa(map) {
-    if (!navigator.geolocation) {
-        alert('Geolocalização não suportada no seu navegador!');
-        return;
-    }
-    navigator.geolocation.getCurrentPosition(function(position) {
-        var lat = position.coords.latitude;
-        var lon = position.coords.longitude;
-        map.setView([lat, lon], 14);
-        L.marker([lat, lon], {icon: L.icon({
-            iconUrl: 'https://cdn.iconscout.com/icon/free/png-256/location-1766-433787.png',
-            iconSize: [32, 32],
-            iconAnchor: [16, 32]
-        })}).addTo(map).bindPopup('Você está aqui!').openPopup();
-    }, function() {
-        // Se negar, não faz nada
-    });
-}
-
-if (document.getElementById('map')) {
-    var map = L.map('map').setView([-14.2400732, -53.1805017], 4); // Centro Brasil
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; OpenStreetMap contributors'
-    }).addTo(map);
-    // Pins fixos de exemplo (cidade)
-    L.marker([-23.55052, -46.633308]).addTo(map).bindPopup('São Paulo');
-    L.marker([-22.906847, -43.172896]).addTo(map).bindPopup('Rio de Janeiro');
-    L.marker([-19.916681, -43.934493]).addTo(map).bindPopup('Belo Horizonte');
-    L.marker([-30.0346471, -51.2176584]).addTo(map).bindPopup('Porto Alegre');
-
-    // Solicitar localização automática ao abrir a página
-    localizarUsuarioNoMapa(map);
-
-    // Botão localização explícito
-    var btn = document.getElementById('btn-localizar-mapa');
-    if (btn) {
-      btn.onclick = function(){ localizarUsuarioNoMapa(map); };
-    }
-}

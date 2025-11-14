@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import get_jwt_identity, get_jwt
 from app.controllers.entities import controller_receptor

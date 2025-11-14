@@ -79,6 +79,33 @@ class Estoque(BaseModel):
         return result.modified_count > 0
 
     @classmethod
+    def decrement_quantity(cls, id: str, quantidade_saida: float):
+      
+        db = connect_db()
+    
+        result = db.estoque.update_one(
+            {
+                "_id": ObjectId(id),
+                "quantidade": {"$gte": quantidade_saida}
+            },
+            {
+                "$inc": {"quantidade": -quantidade_saida},
+                "$set": {"data_atualizacao": datetime.now()}
+            }
+        )
+
+        if result.modified_count > 0:
+            return True, None 
+
+        item = db.estoque.find_one({"_id": ObjectId(id)})
+        if not item:
+            return False, "Item não encontrado."
+        if item['quantidade'] < quantidade_saida:
+            return False, f"Estoque insuficiente. Disponível: {item['quantidade']}."
+        
+        return False, "Não foi possível registrar a baixa no estoque."  
+
+    @classmethod
     def delete(cls, id: str):
         db = connect_db()
         result = db.estoque.delete_one({"_id": ObjectId(id)})

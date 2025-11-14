@@ -1,38 +1,55 @@
-from app.models.entities.model_receptor import Receptor
+# -*- coding: utf-8 -*-
+
+from app.models.entities.model_usuarioUnificado import Receptor, RoleEnum
 from pydantic import ValidationError
 
 def create_receptor(data):
     try:
+        data['role'] = RoleEnum.RECEPTOR
         novo_receptor = Receptor(**data)
-        novo_receptor.save()
-        return novo_receptor.dict(), None
+        
+        novo_receptor.save() 
+        
+        receptor_dict = novo_receptor.dict()
+        receptor_dict.pop('senha', None) 
+        
+        return receptor_dict, None
     except ValidationError as e:
         return None, e.errors()
+    except ValueError as e: # Captura erro de email duplicado
+        return None, str(e)
     except Exception as e:
         return None, str(e)
 
-def get_all_receptores():
+def get_all_receptor():
     try:
-        receptores = Receptor.find_all()
-        return [receptor.dict() for receptor in receptores], None
+        receptor = Receptor.find_all_by_role(RoleEnum.RECEPTOR)
+        return [a.dict(exclude={'senha'}) for a in receptor], None
     except Exception as e:
         return None, str(e)
 
 def get_receptor(id):
-    receptor = Receptor.find_by_id(id)
-    if receptor:
-        return receptor.dict(), None
+    receptor = receptor.find_by_id(id)
+    
+    if receptor and receptor.role == RoleEnum.RECEPTOR:
+        return receptor.dict(exclude={'senha'}), None
+    
     return None, "Receptor não encontrado."
 
 def update_receptor(id, data):
-    if not Receptor.find_by_id(id):
-        return None, "Receptor não encontrado."
-
-    if Receptor.update(id, data):
-        return {"mensagem": "Receptor atualizado com sucesso."}, None
-    return None, "Dados inalterados ou erro ao atualizar."
+    try:
+        success = Receptor.update_user(id, data, role_check=RoleEnum.RECEPTOR)
+        if success:
+            return {"mensagem": "Receptor atualizado com sucesso."}, None
+        return None, "Receptor não encontrado ou dados inalterados."
+    except Exception as e:
+        return None, str(e)
 
 def delete_receptor(id):
-    if Receptor.delete(id):
-        return {"mensagem": "Receptor deletado com sucesso."}, None
-    return None, "Receptor não encontrado."
+    try:
+        success = Receptor.delete_user(id, role_check=RoleEnum.RECEPTOR)
+        if success:
+            return {"mensagem": "Receptor deletado com sucesso."}, None
+        return None, "Receptor não encontrado."
+    except Exception as e:
+        return None, str(e)

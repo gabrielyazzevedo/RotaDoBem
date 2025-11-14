@@ -59,3 +59,32 @@ def get_item_por_id(item_id):
     if item:
         return item.dict(), None
     return None, "Item de estoque não encontrado."
+
+def dar_baixa_estoque(item_id: str, data: dict, id_usuario_logado: str, claims: dict):
+    """
+    Registra uma saída (baixa) de um item do estoque.
+    Verifica se o usuário logado é o dono do item ou um admin.
+    """
+    try:
+        item = Estoque.find_by_id(item_id)
+        if not item:
+            return None, "Item de estoque não encontrado."
+
+        if claims.get("role") != 'admin' and item.receptor_id != id_usuario_logado:
+            return None, "Acesso não autorizado. Este item não pertence ao seu estoque."
+
+        quantidade_saida = float(data['quantidade'])
+        if quantidade_saida <= 0:
+            return None, "Quantidade de saída deve ser um valor positivo."
+
+        success, error = Estoque.decrement_quantity(item_id, quantidade_saida)
+        
+        if not success:
+            return None, error
+
+        return {"mensagem": "Baixa no estoque registrada com sucesso."}, None
+
+    except (ValueError, KeyError):
+        return None, "Dados inválidos. Forneça uma 'quantidade' numérica."
+    except Exception as e:
+        return None, str(e)

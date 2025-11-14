@@ -1,4 +1,5 @@
-# models/usuario_unificado.py
+# -*- coding: utf-8 -*-
+
 from pydantic import BaseModel, EmailStr, Field, validator
 from typing import Optional, List, Union
 from enum import Enum
@@ -7,13 +8,6 @@ from bson import ObjectId
 import re
 from passlib.context import CryptContext
 
-# 1. CONTEXTO DE CRIPTOGRAFIA PARA SENHAS
-# Usaremos isso para nunca salvar senhas em texto puro
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
-
-# 2. MODELOS AUXILIARES (que você já tinha)
-# Mantivemos os modelos que são usados dentro de outros
 class Endereco(BaseModel):
     logradouro: str
     numero: str
@@ -22,12 +16,18 @@ class Endereco(BaseModel):
     cidade: str
     estado: str
     cep: str
+    id: Optional[ObjectId] = Field(None, alias='_id') 
 
     @validator('cep')
     def validar_cep(cls, v):
         if not re.match(r'^\d{5}-\d{3}$', v):
             raise ValueError('CEP deve estar no formato 00000-000')
         return v
+
+    class Config:
+        arbitrary_types_allowed = True
+        json_encoders = {ObjectId: str}
+        allow_population_by_field_name = True  # Permite usar alias '_id'
 
 class ResponsavelLegal(BaseModel):
     nome_completo: str
@@ -41,30 +41,26 @@ class ResponsavelLegal(BaseModel):
         return v
 
 
-# 3. ENUM PARA OS PAPÉIS (ROLES)
-# Isso garante que só possamos usar os 4 tipos definidos
 class RoleEnum(str, Enum):
     ADMIN = "admin"
     DOADOR = "doador"
     RECEPTOR = "receptor"
     MOTORISTA = "motorista"
 
-
-# 4. O MODELO BASE UNIFICADO
-# Contém os campos que TODOS os usuários têm em comum
 class Usuario(BaseModel):
     id: Optional[ObjectId] = Field(None, alias='_id')
-    nome: str  # Campo unificado para nome, nome_completo ou razão_social
+    nome: str
     email: EmailStr
     senha: str
     telefones: List[str] = []
-    role: RoleEnum # O campo que define o tipo de usuário
+    role: RoleEnum
     ativo: bool = True
 
     class Config:
         arbitrary_types_allowed = True
         json_encoders = {ObjectId: str}
-        use_enum_values = True # Garante que o valor do Enum seja salvo como string
+        allow_population_by_field_name = True
+        use_enum_values = True
 
     # --- MÉTODOS DE SEGURANÇA DE SENHA ---
     def set_password(self, plain_password):
@@ -78,19 +74,42 @@ class Usuario(BaseModel):
         """Salva o usuário no banco de dados. Se a senha não estiver criptografada, ela será."""
         db = connect_db()
         
-        # Criptografa a senha antes de salvar, se necessário
         if not self.senha.startswith("$2b$"):
             self.set_password(self.senha)
 
         data = self.dict(by_alias=True, exclude_none=True)
         
         # Garante que o email seja único
-        if db.usuarios.find_one({"email": self.email}):
+        existing = db.usuarios.find_one({"email": self.email})
+        if existing and (self.id is None or existing['_id'] != self.id):
             raise ValueError(f"Usuário com email {self.email} já existe.")
 
-        result = db.usuarios.insert_one(data)
-        self.id = result.inserted_id
+        if self.id: # Se tem ID, é um update
+            db.usuarios.update_one({"_id": self.id}, {"$set": data})
+        else: # Se não tem ID, é um insert
+            result = db.usuarios.insert_one(data)
+            self.id = result.inserted_id
         return self
+
+    # --- MÉTODOS DE BANCO DE DADOS ---
+    
+    @classmethod
+    def connect_db(cls):
+        """Helper para obter a conexão do DB"""
+        return connect_db()
+
+    @classmethod
+    def _get_model_by_role(cls, role: str):
+        """Helper para retornar a classe Pydantic correta."""
+        
+        model_map = {
+            "admin": Admin,
+            "doador": Doador,
+            "receptor": Receptor,
+            "motorista": Motorista
+        }
+        
+        return model_map.get(role, cls)
 
     @classmethod
     def find_by_email(cls, email: str):
@@ -100,39 +119,74 @@ class Usuario(BaseModel):
         if not data:
             return None
         
-        # "Fábrica" de modelos: decide qual classe usar baseado no 'role'
         role = data.get("role")
-        if role == RoleEnum.ADMIN:
-            return Admin(**data)
-        elif role == RoleEnum.DOADOR:
-            return Doador(**data)
-        elif role == RoleEnum.RECEPTOR:
-            return Receptor(**data)
-        elif role == RoleEnum.MOTORISTA:
-            return Motorista(**data)
-        else:
-            return Usuario(**data) # Fallback
+        model = cls._get_model_by_role(role)
+        return model(**data)
 
     @classmethod
     def find_by_id(cls, id: str):
+        try:
+            obj_id = ObjectId(id)
+        except:
+            return None # ID inválido
+        
         db = connect_db()
-        data = db.usuarios.find_one({"_id": ObjectId(id)})
+        data = db.usuarios.find_one({"_id": obj_id})
         if not data:
             return None
-        # Usa a mesma lógica de "fábrica" do find_by_email
+        
         role = data.get("role")
-        model_map = {
-            RoleEnum.ADMIN: Admin,
-            RoleEnum.DOADOR: Doador,
-            RoleEnum.RECEPTOR: Receptor,
-            RoleEnum.MOTORISTA: Motorista
-        }
-        model = model_map.get(role, cls)
+        model = cls._get_model_by_role(role)
         return model(**data)
 
+            
+    @classmethod
+    def find_all_by_role(cls, role: RoleEnum):
+        """Retorna todos os usuários de uma role específica."""
+        db = connect_db()
+        users_data = list(db.usuarios.find({"role": role.value}))
+        
+        model = cls._get_model_by_role(role.value)
+        
+        # Retorna uma lista de instâncias do modelo Pydantic
+        return [model(**data) for data in users_data]
 
-# 5. MODELOS ESPECÍFICOS QUE HERDAM DE USUÁRIO
-# Eles trazem os campos comuns e adicionam os seus próprios
+    @classmethod
+    def update_user(cls, id: str, data: dict, role_check: RoleEnum = None):
+        """Atualiza um usuário no banco de dados."""
+        db = connect_db()
+        
+        # Remove campos que não devem ser atualizados diretamente
+        data.pop('role', None)
+        data.pop('email', None)
+        data.pop('_id', None)
+        data.pop('id', None)
+
+        # Se uma nova senha for fornecida, criptografa ela
+        if 'senha' in data and data['senha']:
+            data['senha'] = pwd_context.hash(data['senha'])
+        else:
+            data.pop('senha', None) # Remove se for vazia
+        
+        query = {"_id": ObjectId(id)}
+        if role_check:
+            query["role"] = role_check.value # Garante que estamos atualizando o usuario certo
+        
+        result = db.usuarios.update_one(query, {"$set": data})
+        return result.modified_count > 0
+
+    @classmethod
+    def delete_user(cls, id: str, role_check: RoleEnum = None):
+        """Deleta um usuário do banco de dados."""
+        db = connect_db()
+        query = {"_id": ObjectId(id)}
+        if role_check:
+            query["role"] = role_check.value
+            
+        result = db.usuarios.delete_one(query)
+        return result.deleted_count > 0
+
+# HERDAM DE USUÁRIO
 
 class Admin(Usuario):
     role: RoleEnum = Field(RoleEnum.ADMIN, const=True) # Valor fixo

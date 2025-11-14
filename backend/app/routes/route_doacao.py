@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
+
 from flask import Blueprint, request, jsonify
-from flask_jwt_extended import get_jwt_identity
+from flask_jwt_extended import get_jwt_identity, get_jwt
 from app.controllers.entities import controller_doacao
 from app.middleware.auth import auth_required
 
@@ -19,7 +20,9 @@ def create():
 @doacao_routes.route('/doacoes', methods=['GET'])
 @auth_required
 def get_all():
-    doacoes, error = controller_doacao.get_all_doacoes()
+    claims = get_jwt() 
+    status = request.args.get('status') 
+    doacoes, error = controller_doacao.get_all_doacoes(claims, status)
     if error:
         return jsonify({"erro": error}), 500
     return jsonify(doacoes), 200
