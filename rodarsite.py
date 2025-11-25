@@ -4,7 +4,7 @@ import sys
 import webbrowser
 from pathlib import Path
 import socket
-
+import time
 
 def get_local_ips():
     ips = []
@@ -23,24 +23,47 @@ def get_local_ips():
     return ips
 
 def start_backend():
-    python_exe = str(Path('.venv') / 'Scripts' / 'python.exe' if os.name == 'nt' else Path('.venv') / 'bin' / 'python')
-    print("\nIniciando o backend (Flask API)...\n")
-    return subprocess.Popen([python_exe, 'backend/run.py'])
+    # Tenta encontrar o Python do ambiente virtual
+    if os.name == 'nt': # Windows
+        python_exe = Path('.venv') / 'Scripts' / 'python.exe'
+    else: # Linux/Mac
+        python_exe = Path('.venv') / 'bin' / 'python'
+    
+    # Fallback se não achar o venv, usa o python do sistema
+    if not python_exe.exists():
+        python_exe = sys.executable
 
+    script_path = os.path.join('backend', 'run.py')
+    
+    if not os.path.exists(script_path):
+        print(f"ERRO: O arquivo '{script_path}' não foi encontrado!")
+        print("Verifique se você está na pasta correta 'RotaDoBem'.")
+        return None
+
+    print(f"\nIniciando o backend usando: {python_exe}")
+    print(f"Executando script: {script_path}\n")
+    
+    return subprocess.Popen([str(python_exe), script_path])
 
 def open_frontend():
+    print("\nAguardando servidor iniciar...")
+    time.sleep(3) 
     print("\nAcesse o site pelo navegador:\n")
     print("   → http://localhost:5000/")
     for ip in get_local_ips():
         if not ip.startswith('127.'):
             print(f"   → http://{ip}:5000/")
-    print("\nSe não abrir automaticamente, copie e cole um destes no seu navegador!")
-    webbrowser.open_new_tab('http://localhost:5000/')
-
+    
+    webbrowser.open('http://localhost:5000/')
 
 def main():
     backend_proc = start_backend()
+    if not backend_proc:
+        input("Pressione ENTER para sair...")
+        return
+
     open_frontend()
+    
     try:
         backend_proc.wait()
     except KeyboardInterrupt:

@@ -1,113 +1,104 @@
 # -*- coding: utf-8 -*-
 
-from pydantic import BaseModel, Field
-from typing import Optional
+from pydantic import BaseModel, Field, BeforeValidator, ConfigDict
+from typing import Optional, Annotated
 from datetime import datetime
 from enum import Enum
 from app.config.database import connect_db
 from bson import ObjectId
 from app.models.entities.model_usuarioUnificado import Endereco
 
+# Helper para Pydantic V2 aceitar ObjectId
+PyObjectId = Annotated[str, BeforeValidator(str)]
+
 class StatusRotaEnum(str, Enum):
-    """Define os status possíveis de uma rota."""
-    PENDENTE = "pendente"       # Rota calculada, aguardando motorista
-    EM_ANDAMENTO = "em_andamento" # Motorista aceitou e está a caminho
-    CONCLUIDA = "concluida"     # Motorista finalizou a entrega
-    CANCELADA = "cancelada"     # Rota foi cancelada
+    PENDENTE = "pendente"
+    EM_ANDAMENTO = "em_andamento"
+    CONCLUIDA = "concluida"
+    CANCELADA = "cancelada"
 
 class Rota(BaseModel):
-    id: Optional[ObjectId] = Field(None, alias='_id')
-    doacao_id: str  # ID da doação que esta rota atende
-    motorista_id: Optional[str] = None # ID do motorista (atribuído depois)
+    id: Optional[PyObjectId] = Field(None, alias='_id')
+    doacao_id: str
+    motorista_id: Optional[str] = None
     status: StatusRotaEnum = StatusRotaEnum.PENDENTE
     
-    # Dados da Origem (Doador) e Destino (Receptor)
+    # Dados de Endereço
     endereco_origem: Endereco
     endereco_destino: Endereco
 
-    # Dados calculados pelo Google Maps (controller_rota)
+    # Dados Google Maps
     distancia_texto: str
     duracao_texto: str
     resumo_rota: str
     google_maps_link: str
 
-    # Tempo para controle
+    # Datas
     data_criacao: datetime = Field(default_factory=datetime.now)
     data_conclusao: Optional[datetime] = None
 
-    class Config:
-        arbitrary_types_allowed = True
-        json_encoders = {ObjectId: str}
-        use_enum_values = True # Salva "pendente" no DB"
+    # Configuração Pydantic V2
+    model_config = ConfigDict(
+        populate_by_name=True,
+        arbitrary_types_allowed=True,
+        json_encoders={ObjectId: str},
+        use_enum_values=True
+    )
 
     # --- Métodos do BD ---
 
     def save(self):
-        """Salva ou atualiza uma rota no banco de dados."""
         db = connect_db()
-        data = self.dict(by_alias=True, exclude_none=True)
+        # mode='json' ajuda a converter sub-modelos (Endereço) corretamente
+        data = self.model_dump(by_alias=True, exclude_none=True)
         
-        if self.id: # Se tem ID, é um update
-            db.rotas.update_one({"_id": self.id}, {"$set": data})
-        else: # Se não tem ID, é um insert
+        if data.get('_id') is None:
+            data.pop('_id', None)
+        
+        if self.id:
+            db.rotas.update_one({"_id": ObjectId(self.id)}, {"$set": data})
+        else:
             result = db.rotas.insert_one(data)
-            self.id = result.inserted_id
+            self.id = str(result.inserted_id)
         return self
 
     @classmethod
     def find_by_id(cls, id: str):
-        """Busca uma rota pelo seu ID."""
+        try: obj_id = ObjectId(id)
+        except: return None
         db = connect_db()
-        try:
-            data = db.rotas.find_one({"_id": ObjectId(id)})
-            if data:
-                return cls(**data)
-        except:
-            return None
+        data = db.rotas.find_one({"_id": obj_id})
+        if data: return cls(**data)
         return None
 
     @classmethod
     def find_by_doacao_id(cls, doacao_id: str):
-        """Busca uma rota pelo ID da doação."""
         db = connect_db()
         data = db.rotas.find_one({"doacao_id": doacao_id})
-        if data:
-            return cls(**data)
+        if data: return cls(**data)
         return None
 
     @classmethod
     def find_all(cls, query: dict = {}):
-        """Busca todas as rotas (ou filtra por uma query)."""
         db = connect_db()
         rotas = list(db.rotas.find(query))
         return [cls(**r) for r in rotas]
 
     @classmethod
     def update(cls, id: str, data: dict):
-        """Atualiza campos específicos de uma rota."""
         db = connect_db()
         
-        # Garante que dados sensíveis não sejam sobrescritos
-        data.pop('_id', None)
-        data.pop('id', None)
-        data.pop('doacao_id', None) # Não deve mudar a doação de uma rota
+        # Limpeza de campos protegidos
+        for f in ['_id', 'id', 'doacao_id']:
+            data.pop(f, None)
         
-        # Se o status for concluida, atualiza a data de conclusão
         if data.get("status") == StatusRotaEnum.CONCLUIDA.value:
             data['data_conclusao'] = datetime.now()
 
-        result = db.rotas.update_one(
-            {"_id": ObjectId(id)},
-            {"$set": data}
-        )
+        result = db.rotas.update_one({"_id": ObjectId(id)}, {"$set": data})
         return result.modified_count > 0
 
     @classmethod
     def delete(cls, id: str):
-        """Deleta uma rota."""
         db = connect_db()
-        try:
-            result = db.rotas.delete_one({"_id": ObjectId(id)})
-            return result.deleted_count > 0
-        except:
-            return False
+        return db.rotas.delete_one({"_id": ObjectId(id)}).deleted_count > 0

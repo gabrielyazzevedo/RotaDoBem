@@ -4,239 +4,464 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - Rota do Bem</title>
-    <link rel="stylesheet" href="/css/style.css">
+    <title>Rota do Bem - Painel</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <style>
+        /* --- CSS EMBUTIDO --- */
+        * { box-sizing: border-box; }
+
+        :root {
+            --primary: #E67E22;
+            --primary-dark: #d35400;
+            --dark: #2d3748;
+            --light-bg: #f3f4f6;
+            --white: #ffffff;
+            --gray: #718096;
+            --success: #48bb78;
+            --warning: #ecc94b;
+            --danger: #f56565;
+            --sidebar-width: 260px;
+            --sidebar-collapsed-width: 80px; 
+        }
+
+        body {
+            background-color: var(--light-bg);
+            font-family: 'Inter', sans-serif;
+            color: var(--dark);
+            margin: 0;
+            display: flex;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--white);
+            height: 100vh;
+            position: fixed;
+            left: 0; top: 0;
+            border-right: 1px solid #e2e8f0;
+            display: flex; flex-direction: column;
+            padding: 1.5rem;
+            z-index: 1000;
+            transition: width 0.3s ease, padding 0.3s ease;
+            white-space: nowrap; overflow: hidden;
+        }
+
+        body.sidebar-closed .sidebar {
+            width: var(--sidebar-collapsed-width);
+            padding: 1.5rem 0.5rem;
+        }
+
+        .brand {
+            display: flex; align-items: center; gap: 0.75rem;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.5rem; font-weight: 700;
+            color: var(--primary); margin-bottom: 2.5rem;
+            text-decoration: none; padding-left: 0.5rem;
+            height: 40px;
+        }
+
+        .brand span { transition: opacity 0.2s ease, visibility 0.2s; opacity: 1; visibility: visible; }
+        body.sidebar-closed .brand span { opacity: 0; visibility: hidden; position: absolute; }
+
+        .nav-list { list-style: none; padding: 0; flex: 1; }
+        .nav-item { margin-bottom: 0.5rem; }
+
+        .nav-link {
+            display: flex; align-items: center; gap: 1rem;
+            padding: 0.75rem 1rem; border-radius: 0.5rem;
+            color: var(--gray); text-decoration: none;
+            font-weight: 500; transition: all 0.2s;
+            height: 48px;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            background-color: #fff7ed; color: var(--primary);
+        }
+
+        .nav-link i { min-width: 24px; text-align: center; font-size: 1.2rem; }
+        .nav-link span { transition: opacity 0.2s ease; white-space: nowrap; }
+        
+        body.sidebar-closed .nav-link span { opacity: 0; visibility: hidden; width: 0; }
+        body.sidebar-closed .nav-link { justify-content: center; padding-left: 0; padding-right: 0; }
+
+        .logout-btn { margin-top: auto; color: var(--danger); }
+        .logout-btn:hover { background-color: #fff5f5; color: #c53030; }
+
+        /* MAIN CONTENT */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            flex: 1; padding: 2rem;
+            width: calc(100% - var(--sidebar-width));
+            transition: margin-left 0.3s ease, width 0.3s ease;
+        }
+
+        body.sidebar-closed .main-content {
+            margin-left: var(--sidebar-collapsed-width);
+            width: calc(100% - var(--sidebar-collapsed-width));
+        }
+
+        /* HEADER BAR */
+        .header-bar {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 2rem; background: var(--light-bg);
+            position: sticky; top: 0; z-index: 900; padding-bottom: 10px;
+        }
+
+        .menu-toggle {
+            font-size: 1.5rem; cursor: pointer; margin-right: 1.5rem;
+            color: var(--dark); width: 40px; height: 40px;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 8px; background: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            transition: all 0.2s; border: 1px solid #e2e8f0;
+        }
+        .menu-toggle:hover { background: var(--primary); color: white; border-color: var(--primary); }
+
+        .header-title h2 { font-family: 'Montserrat', sans-serif; font-size: 1.75rem; margin: 0; }
+
+        .user-badge {
+            background: var(--white); padding: 0.5rem 1rem;
+            border-radius: 2rem; border: 1px solid #e2e8f0;
+            font-weight: 600; color: var(--primary); font-size: 0.9rem;
+            display: flex; align-items: center; gap: 0.5rem;
+        }
+
+        /* GENERAL UI */
+        .content-card {
+            background: var(--white); border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            padding: 1.5rem; margin-bottom: 2rem;
+        }
+
+        .section-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 1.5rem; padding-bottom: 1rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .btn-primary {
+            background: var(--primary); color: white; border: none;
+            padding: 0.7rem 1.5rem; border-radius: 0.5rem;
+            font-weight: 600; cursor: pointer;
+            display: flex; align-items: center; gap: 0.5rem;
+            transition: background 0.2s;
+        }
+        .btn-primary:hover { background: var(--primary-dark); }
+
+        .btn-outline {
+            background: transparent; border: 1px solid var(--primary);
+            color: var(--primary); padding: 0.5rem 1rem;
+            border-radius: 0.5rem; cursor: pointer; font-weight: 600;
+            transition: all 0.2s;
+        }
+        .btn-outline:hover { background: var(--primary); color: white; }
+
+        /* CARDS DE DOAÇÃO */
+        .donations-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem;
+        }
+        .donation-card {
+            border: 1px solid #e2e8f0; border-radius: 0.75rem;
+            overflow: hidden; background: var(--white);
+            transition: transform 0.2s; display: flex; flex-direction: column;
+        }
+        .donation-card:hover { transform: translateY(-4px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+        
+        .card-header { background: #f8fafc; padding: 1rem; border-bottom: 1px solid #e2e8f0; }
+        .card-header h4 { margin: 0; color: var(--dark); font-size: 1.1rem; }
+        
+        .card-body { padding: 1rem; flex: 1; display: flex; flex-direction: column; gap: 0.6rem; }
+        .info-item { display: flex; align-items: center; gap: 0.5rem; color: var(--gray); font-size: 0.9rem; }
+        .info-item i { color: var(--primary); width: 20px; text-align: center; }
+
+        .status-badge {
+            padding: 0.25rem 0.75rem; border-radius: 1rem;
+            font-size: 0.75rem; font-weight: 600; text-transform: uppercase;
+            display: inline-block;
+        }
+        .status-pendente { background: #fefcbf; color: #b7791f; }
+        .status-aceita { background: #bee3f8; color: #2b6cb0; }
+        .status-concluida { background: #c6f6d5; color: #2f855a; }
+
+        .card-footer { padding: 1rem; border-top: 1px solid #e2e8f0; }
+        .card-footer button { width: 100%; }
+
+        /* FORMULÁRIOS */
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .form-group { margin-bottom: 1rem; }
+        .form-group label { display: block; margin-bottom: 0.5rem; font-size: 0.9rem; font-weight: 500; }
+        .form-group input, .form-group select {
+            width: 100%; padding: 0.7rem; border: 1px solid #cbd5e0;
+            border-radius: 0.5rem; font-family: inherit;
+        }
+
+        /* MODAIS */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); display: none;
+            justify-content: center; align-items: center;
+            z-index: 2000; backdrop-filter: blur(2px);
+        }
+        .modal-content {
+            background: var(--white); padding: 2rem;
+            border-radius: 1rem; width: 90%; max-width: 500px;
+            position: relative; animation: slideDown 0.3s ease;
+        }
+        .close-modal {
+            position: absolute; top: 1rem; right: 1rem;
+            background: none; border: none; font-size: 1.5rem;
+            cursor: pointer; color: var(--gray);
+        }
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* MOBILE */
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); width: var(--sidebar-width) !important; }
+            .sidebar.mobile-open { transform: translateX(0); }
+            .main-content { margin-left: 0 !important; width: 100% !important; }
+            body.sidebar-closed .main-content { margin-left: 0; width: 100%; }
+            .form-grid { grid-template-columns: 1fr; }
+        }
+    </style>
 </head>
 
 <body>
 
-    <style>
-        .nav-item a.active {
-            background: #667eea;
-            color: white;
-            font-weight: 600;
-        }
+    <nav class="sidebar" id="sidebar">
+        <a href="/" class="brand">
+            <i class="fas fa-heart"></i> <span>Rota do Bem</span>
+        </a>
+        
+        <ul class="nav-list">
+            <li class="nav-item">
+                <a href="#" class="nav-link active" data-page="doacoes">
+                    <i class="fas fa-box-open"></i> <span>Doações</span>
+                </a>
+            </li>
+            
+            <li class="nav-item">
+                <a href="#" class="nav-link" data-page="rotas">
+                    <i class="fas fa-route"></i> <span>Rotas</span>
+                </a>
+            </li>
 
-        #doacoes-list {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 1.5rem;
-        }
+            <li class="nav-item">
+                <a href="#" class="nav-link" data-page="estoque">
+                    <i class="fas fa-warehouse"></i> <span>Estoque</span>
+                </a>
+            </li>
 
-        .donation-card {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-            border: 1px solid #eee;
-            overflow: hidden;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
+            <li class="nav-item">
+                <a href="#" class="nav-link" data-page="historico">
+                    <i class="fas fa-history"></i> <span>Histórico</span>
+                </a>
+            </li>
 
-        .donation-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
-        }
+            <li class="nav-item">
+                <a href="#" class="nav-link" data-page="finalizadas">
+                    <i class="fas fa-check-double"></i> <span>Recebidos</span>
+                </a>
+            </li>
 
-        .donation-card-header {
-            background: #f9f9f9;
-            padding: 1rem;
-            border-bottom: 1px solid #eee;
-        }
+            <li class="nav-item">
+                <a href="#" class="nav-link" data-page="doadores">
+                    <i class="fas fa-hand-holding-heart"></i> <span>Doadores</span>
+                </a>
+            </li>
+            
+            <li class="nav-item">
+                <a href="#" class="nav-link" data-page="receptores">
+                    <i class="fas fa-hands-helping"></i> <span>Receptores</span>
+                </a>
+            </li>
+            
+            <li class="nav-item">
+                <a href="#" class="nav-link logout-btn" id="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i> <span>Sair</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
 
-        .donation-card-header h4 {
-            font-size: 1.2rem;
-            color: #333;
-            margin: 0;
-        }
-
-        .donation-card-body {
-            padding: 1.5rem;
-            display: flex;
-            flex-direction: column;
-            gap: 0.75rem;
-        }
-
-        .info-item {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            font-size: 0.95rem;
-            color: #555;
-        }
-
-        .info-item i {
-            width: 20px;
-            text-align: center;
-            color: #667eea;
-        }
-
-        .donation-card-footer {
-            padding: 1rem 1.5rem;
-            background: #fdfdfd;
-            border-top: 1px solid #eee;
-        }
-
-        .btn-details {
-            background: #667eea;
-            color: white;
-            border: none;
-            padding: 10px 16px;
-            border-radius: 8px;
-            cursor: pointer;
-            width: 100%;
-            font-weight: 500;
-            font-size: 0.9rem;
-        }
-
-
-        #modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(5px);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-        }
-
-        #modal-content {
-            background: white;
-            border-radius: 16px;
-            padding: 2rem;
-            width: 90%;
-            max-width: 500px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-            position: relative;
-        }
-
-        #modal-close {
-            position: absolute;
-            top: 15px;
-            right: 20px;
-            font-size: 1.5rem;
-            color: #aaa;
-            cursor: pointer;
-            border: none;
-            background: none;
-        }
-
-        #modal-body {
-            margin-top: 1rem;
-        }
-
-        #modal-footer {
-            margin-top: 1.5rem;
-            display: flex;
-            gap: 1rem;
-        }
-
-        .btn-accept {
-            flex: 1;
-            background: #28a745;
-            color: white;
-            border: none;
-            padding: 12px;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-        }
-
-        .btn-cancel {
-            flex: 1;
-            background: #eee;
-            color: #555;
-            border: none;
-            padding: 12px;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 500;
-            cursor: pointer;
-        }
-    </style>
-    <div class="container">
-        <header class="header">
-            <h1 class="logo">Rota do Bem - Admin</h1>
-            <p class="subtitle">Painel de Gerenciamento de Doações</p>
-            <div class="status">
-            </div>
-        </header>
-
-        <nav class="nav">
-            <ul class="nav-list">
-                <li class="nav-item"><a href="#" data-page="dashboard">Dashboard</a></li>
-                <li class="nav-item"><a href="#" data-page="doacoes">Doações</a></li>
-                <li class="nav-item"><a href="#" data-page="doadores">Doadores</a></li>
-                <li class="nav-item"><a href="#" data-page="receptores">Receptores</a></li>
-                <li class="nav-item"><a href="#" data-page="estoque">Estoque</a></li>
-                <li class="nav-item"><a href="#" data-page="rotas">Rotas</a></li>
-                <li class="nav-item"><a href="#" id="logout-btn">Sair</a></li>
-            </ul>
-        </nav>
-
-        <main>
-            <div id="page-dashboard" class="page">
-                <div class="card">
-                    <h3>Estatísticas Gerais</h3>
-                    <div class="stats-container">
-                    </div>
+    <main class="main-content">
+        
+        <div class="header-bar">
+            <div style="display: flex; align-items: center;">
+                <button class="menu-toggle" id="menu-toggle" title="Alternar Menu">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="header-title">
+                    <h2 id="page-title">Mural de Doações</h2>
                 </div>
             </div>
+            
+            <div class="user-info">
+                <div class="user-badge">
+                    <i class="fas fa-user-circle"></i> <span id="user-role-display">Usuário</span>
+                </div>
+            </div>
+        </div>
 
-            <div id="page-doacoes" class="page" style="display: none;">
-                <div class="card">
-                    <h3 id="doacoes-title">Doações Disponíveis</h3>
-                    <div id="doacoes-list">
+        <div id="page-doacoes" class="page-section">
+            <div class="content-card">
+                <div class="section-header">
+                    <h3 id="titulo-doacoes">Doações Ativas</h3>
+                    <button id="btn-nova-doacao" class="btn-primary" style="display: none;">
+                        <i class="fas fa-plus"></i> Nova Doação
+                    </button>
+                </div>
+                <div id="doacoes-list" class="donations-grid">
+                    <p style="grid-column: 1/-1; text-align: center; color: var(--gray);">Carregando doações...</p>
+                </div>
+            </div>
+        </div>
 
-                        <div id="page-doadores" class="page" style="display: none;">
-                            <div class="table-container">
-                                <h3>Doadores Cadastrados</h3>
-                                <div id="doadores-list"></div>
-                            </div>
-                        </div>
+        <div id="page-historico" class="page-section" style="display: none;">
+            <div class="content-card">
+                <h3>Histórico de Contribuições</h3>
+                <div class="section-header" style="background: #fff7ed; padding: 1rem; border-radius: 8px; border: 1px solid #fed7aa; margin-bottom: 2rem;">
+                    <div style="color: var(--primary); font-weight: bold;">
+                        <i class="fas fa-heart"></i> Obrigado! Suas doações fazem a diferença.
+                    </div>
+                </div>
+                <div id="historico-list" class="donations-grid">
+                    <p style="grid-column: 1/-1; text-align: center; color: var(--gray);">Carregando histórico...</p>
+                </div>
+            </div>
+        </div>
 
-                        <div id="page-receptores" class="page" style="display: none;">
-                            <div class="table-container">
-                                <h3>Receptores Cadastrados</h3>
-                                <div id="receptores-list"></div>
-                            </div>
-                        </div>
+        <div id="page-finalizadas" class="page-section" style="display: none;">
+            <div class="content-card">
+                <h3>Histórico de Recebimentos</h3>
+                <div id="finalizadas-list" class="donations-grid">
+                    <p style="grid-column: 1/-1; text-align: center; color: var(--gray);">Carregando histórico...</p>
+                </div>
+            </div>
+        </div>
 
-                        <div id="page-estoque" class="page" style="display: none;">
-                            <div class="table-container">
-                                <h3>Controle de Estoque</h3>
-                                <div id="estoque-list"></div>
-                            </div>
-                        </div>
+        <div id="page-rotas" class="page-section" style="display: none;">
+            <div class="content-card">
+                <h3>Rotas de Entrega</h3>
+                <div id="rotas-list">
+                    <p style="color: var(--gray);">Nenhuma rota ativa no momento.</p>
+                </div>
+            </div>
+        </div>
 
-                        <div id="page-rotas" class="page" style="display: none;">
-                            <div class="table-container">
-                                <h3>Gerenciamento de Rotas</h3>
-                                <div id="rotas-list"></div>
-                            </div>
-                        </div>
-        </main>
+        <div id="page-estoque" class="page-section" style="display: none;">
+            <div class="content-card"><h3>Controle de Estoque</h3><div id="estoque-list"></div></div>
+        </div>
+        <div id="page-doadores" class="page-section" style="display: none;">
+            <div class="content-card"><h3>Doadores</h3><div id="doadores-list"></div></div>
+        </div>
+        <div id="page-receptores" class="page-section" style="display: none;">
+            <div class="content-card"><h3>Receptores</h3><div id="receptores-list"></div></div>
+        </div>
+
+    </main>
+
+    <div id="modal-nova-doacao" class="modal-overlay">
+        <div class="modal-content">
+            <button class="close-modal" onclick="app.closeNovaDoacaoModal()">&times;</button>
+            <h3>Nova Doação</h3>
+            <form id="form-nova-doacao">
+                <div class="form-group">
+                    <label>Item / Alimento</label>
+                    <input type="text" name="alimento" placeholder="Ex: Cesta Básica, Arroz..." required>
+                </div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Quantidade</label>
+                        <input type="number" name="quantidade" step="0.1" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Unidade</label>
+                        <select name="unidade" required>
+                            <option value="kg">Kg</option>
+                            <option value="unidades">Unidades</option>
+                            <option value="caixas">Caixas</option>
+                            <option value="litros">Litros</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Validade</label>
+                    <input type="date" name="validade" required>
+                </div>
+                <div style="display: flex; justify-content: flex-end; gap: 1rem; margin-top: 1rem;">
+                    <button type="button" class="btn-outline" style="width: auto;" onclick="app.closeNovaDoacaoModal()">Cancelar</button>
+                    <button type="submit" class="btn-primary">Publicar</button>
+                </div>
+            </form>
+        </div>
     </div>
 
-    <div id="modal-overlay">
-        <div id="modal-content">
-            <button id="modal-close">&times;</button>
-            <h3 id="modal-title">Detalhes da Doação</h3>
-            <div id="modal-body">
-            </div>
-            <div id="modal-footer">
-                <button class="btn-cancel">Voltar</button>
-                <button class="btn-accept">Aceitar Doação</button>
-            </div>
+    <div id="modal-overlay" class="modal-overlay">
+        <div class="modal-content">
+            <button class="close-modal" id="modal-close">&times;</button>
+            <h3>Detalhes</h3>
+            <div id="modal-body" style="margin-bottom: 1.5rem;"></div>
+            <div id="modal-footer" style="display: flex; gap: 1rem;">
+                <button class="btn-outline" id="btn-cancelar-detalhe">Fechar</button>
+                <button class="btn-primary" id="btn-acao-principal" style="flex: 1;">Ação</button>            </div>
         </div>
     </div>
 
     <script src="/js/app.js"></script>
-</body>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- MENU TOGGLE ---
+            const menuToggle = document.getElementById('menu-toggle');
+            const sidebar = document.getElementById('sidebar');
+            const body = document.body;
+            
+            if(menuToggle) {
+                menuToggle.addEventListener('click', () => {
+                    if (window.innerWidth > 768) body.classList.toggle('sidebar-closed');
+                    else sidebar.classList.toggle('mobile-open');
+                });
+            }
 
+            document.addEventListener('click', (e) => {
+                if (window.innerWidth <= 768 && sidebar.classList.contains('mobile-open') && !sidebar.contains(e.target) && !menuToggle.contains(e.target)) {
+                    sidebar.classList.remove('mobile-open');
+                }
+            });
+
+            // --- NAVEGAÇÃO ---
+            const navLinks = document.querySelectorAll('.nav-link[data-page]');
+            const pageTitle = document.getElementById('page-title');
+
+            navLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    navLinks.forEach(l => l.classList.remove('active'));
+                    link.classList.add('active');
+                    pageTitle.innerText = link.querySelector('span').innerText.trim();
+
+                    const targetPageId = link.getAttribute('data-page');
+                    document.querySelectorAll('.page-section').forEach(section => section.style.display = 'none');
+                    
+                    const targetSection = document.getElementById(`page-${targetPageId}`);
+                    if (targetSection) targetSection.style.display = 'block';
+
+                    if (window.app && typeof window.app.loadPage === 'function') window.app.loadPage(targetPageId);
+                    if (window.innerWidth <= 768) sidebar.classList.remove('mobile-open');
+                });
+            });
+
+            // --- ROLE ---
+            const roleDisplay = localStorage.getItem('rota_role');
+            if(roleDisplay) document.getElementById('user-role-display').innerText = roleDisplay.charAt(0).toUpperCase() + roleDisplay.slice(1);
+        });
+    </script>
+</body>
 </html>

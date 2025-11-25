@@ -27,6 +27,23 @@ def get_all():
         return jsonify({"erro": error}), 500
     return jsonify(doacoes), 200
 
+@doacao_routes.route('/doacoes/<string:id>/aceitar', methods=['PUT'])
+@auth_required
+def aceitar(id):
+    """Receptor aceita uma doação pendente"""
+    id_receptor = get_jwt_identity() # Pega o ID do token de quem está clicando
+    claims = get_jwt()
+    
+    if claims.get('role') != 'receptor':
+        return jsonify({"erro": "Apenas receptores podem aceitar doações."}), 403
+        
+    response, error = controller_doacao.aceitar_doacao(id, id_receptor)
+    
+    if error:
+        return jsonify({"erro": error}), 400
+    
+    return jsonify(response), 200
+
 @doacao_routes.route('/doacoes/<string:id>', methods=['GET'])
 @auth_required
 def get_one(id):
